@@ -1,11 +1,13 @@
-import "./App.css";
-import "antd/dist/antd.css";
+import "./App.less";
+
+import MainRouter from "./routers/MainRouter";
+import { LocationProvider } from "./LocationContext";
 
 const App = () => {
   return (
-    <>
-      <h1>Hello React</h1>
-    </>
+    <LocationProvider>
+      <MainRouter />
+    </LocationProvider>
   );
 };
 
