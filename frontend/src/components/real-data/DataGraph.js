@@ -1,24 +1,36 @@
 import React from "react";
 import { Line } from "@ant-design/charts";
 
-const DataGraph = ({ data }) => {
+const DataGraph = ({ data, loc }) => {
+  // Ascending order of date
+  const dataY = [...data].sort(function (a, b) {
+    return a.date.localeCompare(b.date) || parseInt(a.hour) - parseInt(b.hour);
+  });
+
   var config = {
-    data: data,
+    data: dataY,
     padding: "auto",
     xField: "DateHour",
     xAxis: {
       tickCount: 5,
       label: {
         formatter: (d) => {
-          return (
+          const dateOnly =
+            d.split("-")[0] + "-" + d.split("-")[1] + "-" + d.split("-")[2];
+
+          const withHour =
             d.split("-")[0] +
             "-" +
             d.split("-")[1] +
             "-" +
             d.split("-")[2] +
             ", Hour-" +
-            d.split("-")[3]
-          );
+            d.split("-")[3];
+
+          const format =
+            loc === "muara_teweh" || loc === "tarusan" ? dateOnly : withHour;
+
+          return format;
         },
         style: {
           fill: "white",
@@ -49,7 +61,7 @@ const DataGraph = ({ data }) => {
         type: "regionFilter",
         start: ["min", "11.5"],
         end: ["max", "max"],
-        color: "#86DC3D",
+        color: loc === "muara_teweh" ? "#F4664A" : "#86DC3D",
       },
     ],
     yAxis: {
@@ -73,6 +85,7 @@ const DataGraph = ({ data }) => {
         };
       },
     },
+    smooth: true,
   };
   return <Line {...config} />;
 };

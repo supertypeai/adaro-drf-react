@@ -3,6 +3,10 @@ from . import views
 
 urlpatterns = [
     path('', views.apiOverview, name='api-overview'),
+    
     path('locs/', views.locationList, name='location-list'),
-    path('locs/<str:pk>/', views.locationData, name='location-data'),
+    path('locs/add-location/', views.addLocation, name='add-location'),
+
+    path('locs/data/<str:pk>/', views.locationData, name='location-data'),
+    path('locs/add-data/', views.addData, name='add-data'),
 ]

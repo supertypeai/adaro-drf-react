@@ -18,22 +18,8 @@ const SideNavbar = () => {
       }}
     >
       {locations.map((location) => {
-        const locTitle =
-          location.name === "muara_tuhup"
-            ? "Muara Tuhup"
-            : location.name === "puruk_cahu"
-            ? "Puruk Cahu"
-            : location.name === "siwak"
-            ? "Teluk Siwak"
-            : location.name === "hasan_basri"
-            ? "Hasan Basri"
-            : location.name === "papar_pujung"
-            ? "Papar Pujung"
-            : location.name === "muara_teweh"
-            ? "Muara Teweh"
-            : "Tarusan";
         return (
-          <SubMenu key={location.id} title={locTitle}>
+          <SubMenu key={location.id} title={location.title}>
             <Menu.Item key={`${location.id}.1`}>
               <Link to={`/locs/${location.id}`}>Data</Link>
             </Menu.Item>

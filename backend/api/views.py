@@ -9,9 +9,9 @@ from .serializers import LocationSerializer, LocationDataSerializer
 def apiOverview(request):
     api_urls = {
         'Locations': '/locs/',
-        'Location (Add)': '/locs/add/',
-        'Location (Data)': '/locs/<str:pk>/',
-        'Location (Data) (Add)': '/locs/<str:pk>/add/',
+        'Location (Add)': '/locs/add-location/',
+        'Location (Data)': '/locs/data/<str:pk>/',
+        'Location (Data) (Add)': '/locs/add-data/',
         'Location (Data) (Update)': '/locs/<str:pk>/update/<str:rowKey>/',
         'Location (Data) (Delete)': '/locs/<str:pk>/delete/<str:rowKey>/',
     }
@@ -25,9 +25,27 @@ def locationList(request):
     
     return Response(serializer.data)
 
+@api_view(['POST'])
+def addLocation(request):
+    serializer = LocationSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+
+    return Response(serializer.data)
+
 @api_view(['GET'])
 def locationData(request, pk):
     data = LocationData.objects.filter(location=pk)
     serializer = LocationDataSerializer(data, many=True)
 
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def addData(request):
+    serializer = LocationDataSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+    
     return Response(serializer.data)

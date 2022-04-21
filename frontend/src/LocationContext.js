@@ -1,21 +1,20 @@
 import React, { useContext, useState, useEffect, createContext } from "react";
+import APIService from "./APIService";
 
 const LocationContext = createContext();
 
 export function LocationProvider({ children }) {
   const [locations, setLocations] = useState([]);
   useEffect(() => {
-    async function fetchLocation() {
-      fetch("http://localhost:8000/api/locs/")
-        .then((resp) => resp.json())
-        .then((data) => setLocations(data));
-    }
-    fetchLocation();
+    APIService.GetLocations().then((response) => {
+      setLocations(response);
+    });
   }, []);
   return (
     <LocationContext.Provider
       value={{
         locations,
+        setLocations,
       }}
     >
       {children}

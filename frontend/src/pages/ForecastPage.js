@@ -11,26 +11,11 @@ const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
-const ForecastPage = ({ loc }) => {
+const ForecastPage = ({ loc, locTitle }) => {
   const { sm } = useBreakpoint();
   const contentMargin = sm ? 200 : 30;
 
   const locId = useLocation().pathname.split("/")[2];
-
-  const locTitle =
-    loc === "muara_tuhup"
-      ? "Muara Tuhup"
-      : loc === "puruk_cahu"
-      ? "Puruk Cahu"
-      : loc === "siwak"
-      ? "Teluk Siwak"
-      : loc === "hasan_basri"
-      ? "Hasan Basri"
-      : loc === "papar_pujung"
-      ? "Papar Pujung"
-      : loc === "muara_teweh"
-      ? "Muara Teweh"
-      : "Tarusan";
 
   return (
     <Layout>

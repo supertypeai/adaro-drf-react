@@ -4,14 +4,37 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "../pages/Home";
 import DataPage from "../pages/DataPage";
 import ForecastPage from "../pages/ForecastPage";
+import { useAPI } from "../LocationContext";
 
 const MainRouter = () => {
+  const { locations } = useAPI();
+
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} exact />
 
-        <Route path="/locs/1" element={<DataPage loc="muara_tuhup" />} exact />
+        {locations.map((location) => {
+          return (
+            <>
+              <Route
+                path={`/locs/${location.id}`}
+                element={
+                  <DataPage loc={location.name} locTitle={location.title} />
+                }
+                exact
+              />
+              <Route
+                path={`/locs/${location.id}/forecast`}
+                element={
+                  <ForecastPage loc={location.name} locTitle={location.title} />
+                }
+              />
+            </>
+          );
+        })}
+
+        {/* <Route path="/locs/1" element={<DataPage loc="muara_tuhup" />} exact />
         <Route
           path="/locs/1/forecast"
           element={<ForecastPage loc="muara_tuhup" />}
@@ -58,7 +81,7 @@ const MainRouter = () => {
           path="/locs/7/forecast"
           element={<ForecastPage loc="tarusan" />}
           exact
-        />
+        /> */}
       </Routes>
     </Router>
   );

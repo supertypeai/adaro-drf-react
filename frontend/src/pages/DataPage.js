@@ -4,31 +4,17 @@ import { Layout, Typography, Grid, Breadcrumb } from "antd";
 
 import Navbar from "../components/navbar/Navbar";
 import SideNavbar from "../components/navbar/SideNavbar";
+import DataComponent from "../components/real-data/DataComponent";
 
 import adaroLogo from "../images/adaro-logo.png";
-import DataComponent from "../components/real-data/DataComponent";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
-const DataPage = ({ loc }) => {
+const DataPage = ({ loc, locTitle }) => {
   const { sm } = useBreakpoint();
   const contentMargin = sm ? 200 : 30;
-  const locTitle =
-    loc === "muara_tuhup"
-      ? "Muara Tuhup"
-      : loc === "puruk_cahu"
-      ? "Puruk Cahu"
-      : loc === "siwak"
-      ? "Teluk Siwak"
-      : loc === "hasan_basri"
-      ? "Hasan Basri"
-      : loc === "papar_pujung"
-      ? "Papar Pujung"
-      : loc === "muara_teweh"
-      ? "Muara Teweh"
-      : "Tarusan";
 
   const path = useLocation().pathname;
   const locId = path.split("/")[2];
@@ -69,8 +55,13 @@ const DataPage = ({ loc }) => {
               </Breadcrumb.Item>
               <Breadcrumb.Item>{locTitle}</Breadcrumb.Item>
             </Breadcrumb>
-            <Title>Content here for {locTitle}</Title>
-            <DataComponent path={path} loc={loc} locId={locId} />
+            <Title>Data of {locTitle}</Title>
+            <DataComponent
+              path={path}
+              loc={loc}
+              locId={locId}
+              locTitle={locTitle}
+            />
           </div>
         </Content>
       </Layout>

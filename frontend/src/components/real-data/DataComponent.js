@@ -1,47 +1,87 @@
 import React, { useState, useEffect } from "react";
-import { Skeleton } from "antd";
+import { Skeleton, Space, Grid, DatePicker, Button } from "antd";
 
 import DataTable from "./DataTable";
 import DataGraph from "./DataGraph";
+import AddData from "../AddData";
+import APIService from "../../APIService";
 
-const DataComponent = ({ path, loc, locId }) => {
+const DataComponent = ({ path, loc, locId, locTitle }) => {
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [filterDate, setFilterDate] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const { useBreakpoint } = Grid;
+  const { md } = useBreakpoint();
+
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/locs/${locId}`, {
-      method: "GET",
-    })
-      .then((response) => response.json())
+    APIService.GetData(locId)
       .then((response) => {
+        setData(response);
+        setFilteredData(response);
         setLoading(false);
-        const dataY = response.map((x) => {
-          return {
-            ...x,
-            DateHour: `${x["date"]}-${x["hour"]}`,
-          };
-        });
-        dataY.sort(function (a, b) {
-          return (
-            a.date.localeCompare(b.date) || parseInt(a.hour) - parseInt(b.hour)
-          );
-        });
-        setData(dataY);
-        console.log(dataY);
       })
       .catch((error) => console.log(error));
-  }, [path, locId]);
+  }, [path, locId, loc]);
+
+  const handleDate = (_, dateString) => {
+    setFilterDate(dateString);
+  };
+
+  const handleFilter = () => {
+    setFilteredData(data.filter((d) => d.date.includes(filterDate)));
+  };
+
+  const handleReset = () => {
+    setFilteredData(data);
+  };
 
   return (
     <>
       {loading ? (
         <Skeleton active={true} />
       ) : (
-        <>
-          <DataGraph data={data} loc={loc} />
-          <DataTable data={data} loc={loc} />
-        </>
-      )}{" "}
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          {/* Hides graph when the screen is too small */}
+          {md ? <DataGraph data={filteredData} loc={loc} /> : null}
+
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div className="left">
+              <AddData locId={locId} locTitle={locTitle} loc={loc} />
+            </div>
+            <div className="right">
+              <DatePicker
+                picker="month"
+                onChange={handleDate}
+                style={{
+                  backgroundColor: "#2d3539",
+                  width: "200px",
+                }}
+              />
+              <Button
+                key="submit"
+                type="primary"
+                style={{ marginLeft: "30px" }}
+                onClick={handleFilter}
+              >
+                Filter Date
+              </Button>
+              <Button
+                key="reset"
+                type="primary"
+                style={{ marginLeft: "30px" }}
+                onClick={handleReset}
+                danger
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
+
+          <DataTable data={filteredData} loc={loc} />
+        </Space>
+      )}
     </>
   );
 };
