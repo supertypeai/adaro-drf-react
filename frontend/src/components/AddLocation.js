@@ -1,11 +1,20 @@
 import React, { useState } from "react";
-import { Input, Modal, Button, InputNumber, Space, Typography } from "antd";
+import {
+  Input,
+  Modal,
+  Button,
+  InputNumber,
+  Space,
+  Typography,
+  Select,
+} from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 
 import APIService from "../APIService";
 import { useAPI } from "../LocationContext";
 
 const { Text } = Typography;
+const { Option } = Select;
 
 const AddLocation = () => {
   const [newLocation, setNewLocation] = useState({
@@ -13,6 +22,7 @@ const AddLocation = () => {
     title: "",
     longitude: "",
     latitude: "",
+    category: "",
   });
 
   const [openModal, setOpenModal] = useState(false);
@@ -72,6 +82,18 @@ const AddLocation = () => {
               setNewLocation({ ...newLocation, latitude: value })
             }
           />
+
+          <Text>Data Category:</Text>
+          <Select
+            defaultValue="Select Category"
+            onChange={(value) =>
+              setNewLocation({ ...newLocation, category: value })
+            }
+          >
+            <Option value="daily">Daily Data</Option>
+            <Option value="six">6x Daily Data</Option>
+            <Option value="hourly">Hourly Data</Option>
+          </Select>
         </Space>
       </Modal>
     </div>

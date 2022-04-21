@@ -3,10 +3,20 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 class Location(models.Model):
+
+    CATEGORIES = [
+        ('daily', 'Daily'),
+        ('six', 'Six'),
+        ('hourly', 'Hourly'),
+    ]
+
     name = models.CharField(max_length=50)
     title = models.CharField(max_length=50, default="loc-title", blank=True, null=True)
     longitude = models.FloatField()
     latitude = models.FloatField()
+    category = models.CharField(
+        max_length=10, choices=CATEGORIES, default='daily'
+    )
 
     def __str__(self):
         return self.name

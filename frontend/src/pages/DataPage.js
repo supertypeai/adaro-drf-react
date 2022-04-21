@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Layout, Typography, Grid, Breadcrumb } from "antd";
 
 import Navbar from "../components/navbar/Navbar";
@@ -12,12 +12,9 @@ const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
-const DataPage = ({ loc, locTitle }) => {
+const DataPage = ({ locId, loc, locTitle, locCategory }) => {
   const { sm } = useBreakpoint();
   const contentMargin = sm ? 200 : 30;
-
-  const path = useLocation().pathname;
-  const locId = path.split("/")[2];
 
   return (
     <Layout>
@@ -26,7 +23,8 @@ const DataPage = ({ loc, locTitle }) => {
         collapsedWidth="0"
         width={200}
         style={{
-          height: "100%",
+          height: "100vh",
+          overflow: "scroll",
           position: "fixed",
           left: 0,
           zIndex: 99,
@@ -57,10 +55,10 @@ const DataPage = ({ loc, locTitle }) => {
             </Breadcrumb>
             <Title>Data of {locTitle}</Title>
             <DataComponent
-              path={path}
               loc={loc}
               locId={locId}
               locTitle={locTitle}
+              locCategory={locCategory}
             />
           </div>
         </Content>

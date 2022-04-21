@@ -1,0 +1,33 @@
+.button-wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+.ant-btn {
+    margin-left: 30px;
+}
+
+@media screen and (max-width: 860px) {
+    .button-wrapper {
+        flex-direction: column;
+    }
+
+    .left {
+        margin-bottom: 1em;
+    }
+}
+
+@media screen and (max-width: 680px) {
+    .right {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .right > * {
+        margin-top: 1em;
+    }
+
+    .ant-btn {
+        margin-left: 0;
+    }
+}

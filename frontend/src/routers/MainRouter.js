@@ -20,7 +20,12 @@ const MainRouter = () => {
               <Route
                 path={`/locs/${location.id}`}
                 element={
-                  <DataPage loc={location.name} locTitle={location.title} />
+                  <DataPage
+                    locId={location.id}
+                    loc={location.name}
+                    locTitle={location.title}
+                    locCategory={location.category}
+                  />
                 }
                 exact
               />

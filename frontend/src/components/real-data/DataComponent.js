@@ -6,7 +6,9 @@ import DataGraph from "./DataGraph";
 import AddData from "../AddData";
 import APIService from "../../APIService";
 
-const DataComponent = ({ path, loc, locId, locTitle }) => {
+import "./DataComponent.css";
+
+const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [filterDate, setFilterDate] = useState(null);
@@ -23,7 +25,7 @@ const DataComponent = ({ path, loc, locId, locTitle }) => {
         setLoading(false);
       })
       .catch((error) => console.log(error));
-  }, [path, locId, loc]);
+  }, [locId, loc]);
 
   const handleDate = (_, dateString) => {
     setFilterDate(dateString);
@@ -46,9 +48,17 @@ const DataComponent = ({ path, loc, locId, locTitle }) => {
           {/* Hides graph when the screen is too small */}
           {md ? <DataGraph data={filteredData} loc={loc} /> : null}
 
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div className="button-wrapper">
             <div className="left">
-              <AddData locId={locId} locTitle={locTitle} loc={loc} />
+              <AddData
+                locId={locId}
+                locTitle={locTitle}
+                locCategory={locCategory}
+                data={data}
+                setData={setData}
+                filteredData={filteredData}
+                setFilteredData={setFilteredData}
+              />
             </div>
             <div className="right">
               <DatePicker
@@ -59,27 +69,16 @@ const DataComponent = ({ path, loc, locId, locTitle }) => {
                   width: "200px",
                 }}
               />
-              <Button
-                key="submit"
-                type="primary"
-                style={{ marginLeft: "30px" }}
-                onClick={handleFilter}
-              >
+              <Button key="submit" type="primary" onClick={handleFilter}>
                 Filter Date
               </Button>
-              <Button
-                key="reset"
-                type="primary"
-                style={{ marginLeft: "30px" }}
-                onClick={handleReset}
-                danger
-              >
+              <Button key="reset" type="primary" onClick={handleReset} danger>
                 Reset
               </Button>
             </div>
           </div>
 
-          <DataTable data={filteredData} loc={loc} />
+          <DataTable data={filteredData} loc={loc} locCategory={locCategory} />
         </Space>
       )}
     </>

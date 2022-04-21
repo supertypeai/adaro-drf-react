@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Table } from "antd";
 
-const DataTable = ({ loc, data }) => {
+const DataTable = ({ loc, data, locCategory }) => {
   const [columns, setColumns] = useState([]);
 
   useEffect(() => {
-    if (loc === "muara_teweh" || loc === "tarusan") {
+    if (locCategory === "daily") {
       setColumns([
         {
           title: "Date",
@@ -37,7 +37,7 @@ const DataTable = ({ loc, data }) => {
         },
       ]);
     }
-  }, [loc]);
+  }, [locCategory]);
 
   return <Table dataSource={data} columns={columns} rowKey="id" />;
 };
