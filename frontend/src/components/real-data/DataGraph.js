@@ -2,15 +2,8 @@ import React from "react";
 import { Line } from "@ant-design/charts";
 
 const DataGraph = ({ data }) => {
-  const dataY = data.map((x) => {
-    return {
-      ...x,
-      DateHour: `${x["date"]}-${x["hour"]}`,
-    };
-  });
-
   var config = {
-    data: dataY,
+    data: data,
     padding: "auto",
     xField: "DateHour",
     xAxis: {
