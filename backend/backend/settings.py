@@ -134,3 +134,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000"
 ]
+
+
+# GOOGLE BIGQUERY CREDENTIAL
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/Users/owenngimli/Documents/Programming/02-Web Development/01-Django/01 - Adaro River/credentials/adaro-data-warehouse-00f03ed46103.json'
