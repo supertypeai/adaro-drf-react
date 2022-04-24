@@ -1,0 +1,8 @@
+.ant-layout-sider::-webkit-scrollbar {
+    display: none;
+}
+
+.ant-layout-sider {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
