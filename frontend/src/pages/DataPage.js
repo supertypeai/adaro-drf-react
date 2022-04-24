@@ -8,6 +8,8 @@ import DataComponent from "../components/real-data/DataComponent";
 
 import adaroLogo from "../images/adaro-logo.png";
 
+import "./DataPage.css";
+
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
@@ -23,8 +25,9 @@ const DataPage = ({ locId, loc, locTitle, locCategory }) => {
         collapsedWidth="0"
         width={200}
         style={{
-          height: "100vh",
-          overflow: "scroll",
+          height: "100%",
+          minHeight: "100vh",
+          overflow: "auto",
           position: "fixed",
           left: 0,
           zIndex: 99,
