@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from google.cloud import bigquery
 from pandas import DataFrame
+import json
 
 from .models import Location, LocationData
 from .serializers import LocationSerializer, LocationDataSerializer
@@ -77,41 +78,45 @@ def sail_status(row):
 def getForecastData(request):
     client = bigquery.Client()
 
-    mt_forecast_dataset = "adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test"
-    mt_one_week_forecast = [
-        table.table_id for table in client.list_tables(mt_forecast_dataset)][-7:]
+    if request.method == 'POST':
+        loc_requested = json.loads(request.body)
+        return loc_requested
 
-    mt_forecast_list = []
+    # mt_forecast_dataset = "adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test"
+    # mt_one_week_forecast = [
+    #     table.table_id for table in client.list_tables(mt_forecast_dataset)][-7:]
 
-    for day in mt_one_week_forecast:
-        query_string = f"""
-                SELECT *
-                FROM `adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test.{day}`
-            """
+    # mt_forecast_list = []
 
-        forecast_query = (
-            client.query(query_string)
-            .result()
-        )
+    # for day in mt_one_week_forecast:
+    #     query_string = f"""
+    #             SELECT *
+    #             FROM `adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test.{day}`
+    #         """
 
-        records = [dict(row) for row in forecast_query]
-        mt_forecast_list.extend(records)
+    #     forecast_query = (
+    #         client.query(query_string)
+    #         .result()
+    #     )
 
-        # SORT THE HOUR ACCORDING TO ADARO'S BUSINESS HOUR
-    mt_forecast_list = sorted(mt_forecast_list, key=lambda x: (
-        x["date"], (float(x["hour"]) - 6) % 24))
+    #     records = [dict(row) for row in forecast_query]
+    #     mt_forecast_list.extend(records)
 
-    mt_forecast_df = DataFrame(mt_forecast_list)
+    #     # SORT THE HOUR ACCORDING TO ADARO'S BUSINESS HOUR
+    # mt_forecast_list = sorted(mt_forecast_list, key=lambda x: (
+    #     x["date"], (float(x["hour"]) - 6) % 24))
 
-    # Turn dataframe to long format
-    mt_forecast_df_melted = mt_forecast_df.melt(id_vars=['date', 'hour'])
-    mt_forecast_json = mt_forecast_df_melted.to_json(orient='records')
+    # mt_forecast_df = DataFrame(mt_forecast_list)
 
-    mt_forecast_wide = mt_forecast_df[['date', 'hour', 'predict']]
+    # # Turn dataframe to long format
+    # mt_forecast_df_melted = mt_forecast_df.melt(id_vars=['date', 'hour'])
+    # mt_forecast_json = mt_forecast_df_melted.to_json(orient='records')
 
-    mt_forecast_wide['Status'] = mt_forecast_wide.apply(
-        lambda row: sail_status(row), axis=1)
+    # mt_forecast_wide = mt_forecast_df[['date', 'hour', 'predict']]
 
-    mt_forecast_wide_json = mt_forecast_wide.to_json(orient="records")
+    # mt_forecast_wide['Status'] = mt_forecast_wide.apply(
+    #     lambda row: sail_status(row), axis=1)
 
-    return True
+    # mt_forecast_wide_json = mt_forecast_wide.to_json(orient="records")
+
+    # return True

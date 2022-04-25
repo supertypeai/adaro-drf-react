@@ -10,6 +10,6 @@ urlpatterns = [
     path('locs/data/<str:pk>/', views.locationData, name='location-data'),
     path('locs/add-data/', views.addData, name='add-data'),
 
-    path('locs/data/<str:pk>/forecast/',
+    path('locs/forecast-data/',
          views.getForecastData, name='forecast-data'),
 ]

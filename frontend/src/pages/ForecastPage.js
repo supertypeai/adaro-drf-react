@@ -6,6 +6,7 @@ import Navbar from "../components/navbar/Navbar";
 import SideNavbar from "../components/navbar/SideNavbar";
 
 import adaroLogo from "../images/adaro-logo.png";
+import ForecastComponent from "../components/forecast-data/ForecastComponent";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
@@ -57,6 +58,7 @@ const ForecastPage = ({ loc, locTitle }) => {
               <Breadcrumb.Item>Forecast</Breadcrumb.Item>
             </Breadcrumb>
             <Title>Forecast for {locTitle}</Title>
+            <ForecastComponent loc={loc} />
           </div>
         </Content>
       </Layout>
