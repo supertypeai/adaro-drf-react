@@ -70,7 +70,6 @@ const AddData = ({
         type="primary"
         onClick={() => {
           setOpenModal(true);
-          console.log(locId);
         }}
       >
         Add New Data <PlusOutlined />

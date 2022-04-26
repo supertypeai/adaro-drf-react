@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Skeleton, Table, Grid, Typography, Space } from "antd";
+import { Skeleton, Typography, Space, Divider } from "antd";
 
 import APIService from "../../APIService";
-import WeeklyForecastGraph from "./WeeklyForecastGraph";
+import WeeklyForecastGraph from "./weekly-forecast/WeeklyForecastGraph";
 import ThreeMonthsBar from "./three-months-forecast/ThreeMonthsBar";
 import ThreeMonthsPie from "./three-months-forecast/ThreeMonthsPie";
 import ThreeMonthsCount from "./three-months-forecast/ThreeMonthsCount";
 
 import "./ForecastComponent.css";
+import WeeklyTableModal from "./weekly-forecast/WeeklyTableModal";
 
 const { Title } = Typography;
 
@@ -45,12 +46,21 @@ const ForecastComponent = ({ loc }) => {
           size="large"
           style={{ width: "100%", marginBottom: "24px" }}
         >
-          <>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
             <Title level={2}>Weekly Forecast</Title>
             <WeeklyForecastGraph weeklyData={weeklyData} />
-          </>
+            <br />
+            <WeeklyTableModal tableWeeklyData={tableWeeklyData} />
+          </div>
           {loc === "muara_tuhup" ? (
             <>
+              <Divider />
               <Title level={2}>Three Months Forecast</Title>
               <div className="three-months-forecast-wrapper container">
                 <div className="three-months-left">
