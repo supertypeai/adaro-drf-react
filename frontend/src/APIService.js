@@ -46,7 +46,7 @@ export default class APIService {
     }).then((response) => response.json());
   }
 
-  static getForecastData(loc) {
+  static getForecastData(body) {
     return fetch("http://127.0.0.1:8000/api/locs/forecast-data/", {
       method: "POST",
       headers: {

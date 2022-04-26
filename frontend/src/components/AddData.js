@@ -41,7 +41,7 @@ const AddData = ({
 
   useEffect(() => {
     setNewData({ ...newData, location: locId });
-  }, [location]);
+  }, [location, newData, locId]);
 
   const [openModal, setOpenModal] = useState(false);
 
