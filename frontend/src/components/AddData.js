@@ -23,7 +23,6 @@ const AddData = ({
   locCategory,
   data,
   setData,
-  filteredData,
   setFilteredData,
 }) => {
   const initialState = {
@@ -106,8 +105,8 @@ const AddData = ({
             <>
               <Text>Hour:</Text>
               <Select
-                defaultValue="Select Hour"
-                value={newData.hour !== "Select Hour" ? newData.hour : null}
+                placeholder="Select Hour"
+                value={newData.hour !== "" ? newData.hour : null}
                 onChange={(value) => {
                   setNewData({ ...newData, hour: value });
                 }}

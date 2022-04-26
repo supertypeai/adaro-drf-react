@@ -1,0 +1,43 @@
+.three-months-forecast-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+
+  margin-bottom: 48px;
+}
+
+.three-months-forecast-wrapper > * {
+  flex-wrap: wrap;
+}
+
+.three-months-left {
+  flex-basis: 40%;
+  height: 100%;
+}
+
+.three-months-right {
+  flex-basis: 60%;
+  height: 100%;
+}
+
+.three-months-right > *:nth-child(1) {
+  margin-bottom: 2em;
+}
+
+@media screen and (max-width: 980px) {
+  .three-months-forecast-wrapper {
+    flex-direction: column;
+  }
+
+  .three-months-left,
+  .three-months-right {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .three-months-right {
+    height: 60%;
+  }
+}

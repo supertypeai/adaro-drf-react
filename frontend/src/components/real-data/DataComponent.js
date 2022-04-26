@@ -18,6 +18,7 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
   const { md } = useBreakpoint();
 
   useEffect(() => {
+    setLoading(true);
     APIService.GetData(locId)
       .then((response) => {
         setData(response);

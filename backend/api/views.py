@@ -83,6 +83,8 @@ def getForecastData(request):
     if request.method == 'POST':
         loc_requested = json.loads(request.body)
         if loc_requested == "muara_tuhup":
+
+            # Weekly Forecast Data
             mt_forecast_dataset = "adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test"
             mt_one_week_forecast = [
                 table.table_id for table in client.list_tables(mt_forecast_dataset)
@@ -123,7 +125,23 @@ def getForecastData(request):
                 mt_forecast_wide_json = mt_forecast_wide.to_json(
                     orient="records")
 
-            return JsonResponse({"response": "success", "data": mt_forecast_json, "data_wide": mt_forecast_wide_json})
+            # Monthly Forecast Data
+            table_id = "adaro-data-warehouse.muara_tuhup_loadabledays_forecast.forecast_loadabledays"
+            query_string = f"""
+                SELECT *
+                FROM `{table_id}`
+            """
+            query_job = (
+                client.query(query_string)
+                .result()
+            )
+
+            query_result = DataFrame([dict(row) for row in query_job]).sort_values(
+                ['year', 'month'], ascending=True)
+            mt_monthly_forecast = query_result.tail(
+                3).to_json(orient='records')
+
+            return JsonResponse({"response": "success", "data": mt_forecast_json, "data_wide": mt_forecast_wide_json, "monthly_data": mt_monthly_forecast})
 
         else:  # Insert other locations' forecast here!
             return JsonResponse({"response": "empty"})
