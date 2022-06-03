@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { Skeleton, Typography, Space, Divider } from "antd";
 
 import APIService from "../../APIService";
@@ -7,9 +6,9 @@ import WeeklyForecastGraph from "./weekly-forecast/WeeklyForecastGraph";
 import ThreeMonthsBar from "./three-months-forecast/ThreeMonthsBar";
 import ThreeMonthsPie from "./three-months-forecast/ThreeMonthsPie";
 import ThreeMonthsCount from "./three-months-forecast/ThreeMonthsCount";
+import WeeklyTableModal from "./weekly-forecast/WeeklyTableModal";
 
 import "./ForecastComponent.css";
-import WeeklyTableModal from "./weekly-forecast/WeeklyTableModal";
 
 const { Title } = Typography;
 
@@ -19,22 +18,22 @@ const ForecastComponent = ({ loc }) => {
   const [monthlyData, setMonthlyData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { pathname } = useLocation();
-
   useEffect(() => {
     setIsLoading(true);
-    APIService.getForecastData(loc)
-      .then((resp) => {
-        if (resp.response === "success") {
-          setWeeklyData(JSON.parse(resp.data));
-          setTableWeeklyData(JSON.parse(resp.data_wide));
-          setMonthlyData(JSON.parse(resp.monthly_data));
-        } else if (resp.response === "empty") {
-          setWeeklyData([]);
-        }
-      })
-      .then(() => setIsLoading(false));
-  }, [pathname]);
+    if (loc !== "loading") {
+      APIService.getForecastData(loc)
+        .then((resp) => {
+          if (resp.response === "success") {
+            setWeeklyData(JSON.parse(resp.data));
+            setTableWeeklyData(JSON.parse(resp.data_wide));
+            setMonthlyData(JSON.parse(resp.monthly_data));
+          } else if (resp.response === "empty") {
+            setWeeklyData([]);
+          }
+        })
+        .then(() => setIsLoading(false));
+    }
+  }, [loc]);
 
   return (
     <>

@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
 import { Layout, Typography, Grid, Breadcrumb } from "antd";
 
 import Navbar from "../components/navbar/Navbar";
@@ -9,14 +9,35 @@ import DataComponent from "../components/real-data/DataComponent";
 import adaroLogo from "../images/adaro-logo.png";
 
 import "./DataPage.css";
+import APIService from "../APIService";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
-const DataPage = ({ locId, loc, locTitle, locCategory }) => {
+const DataPage = () => {
   const { sm } = useBreakpoint();
   const contentMargin = sm ? 200 : 30;
+
+  const params = useParams();
+  const [locations, setLocations] = useState([]);
+  const [loc, setLoc] = useState([]);
+
+  useEffect(() => {
+    const locsCache = JSON.parse(localStorage.getItem("locations"));
+    if (locsCache) {
+      setLocations(locsCache);
+    } else {
+      APIService.GetLocations().then((response) => {
+        localStorage.setItem("locations", JSON.stringify(response));
+        setLocations(response);
+      });
+    }
+  }, [params]);
+
+  useEffect(() => {
+    setLoc(locations.filter((el) => el.id === parseInt(params.id)));
+  }, [locations, params]);
 
   return (
     <Layout>
@@ -54,14 +75,18 @@ const DataPage = ({ locId, loc, locTitle, locCategory }) => {
               <Breadcrumb.Item>
                 <Link to="/">Home</Link>
               </Breadcrumb.Item>
-              <Breadcrumb.Item>{locTitle}</Breadcrumb.Item>
+              <Breadcrumb.Item>
+                {loc.length !== 0 ? loc[0].title : "Loading..."}
+              </Breadcrumb.Item>
             </Breadcrumb>
-            <Title>Data of {locTitle}</Title>
+            <Title>
+              Data of {loc.length !== 0 ? loc[0].title : "Loading..."}
+            </Title>
             <DataComponent
-              loc={loc}
-              locId={locId}
-              locTitle={locTitle}
-              locCategory={locCategory}
+              loc={loc.length !== 0 ? loc[0].name : "Loading..."}
+              locId={params.id}
+              locTitle={loc.length !== 0 ? loc[0].title : "Loading..."}
+              locCategory={loc.length !== 0 ? loc[0].category : "Loading..."}
             />
           </div>
         </Content>

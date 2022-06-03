@@ -1,9 +1,10 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
 import { Layout, Typography, Grid, Breadcrumb } from "antd";
 
 import Navbar from "../components/navbar/Navbar";
 import SideNavbar from "../components/navbar/SideNavbar";
+import APIService from "../APIService";
 
 import adaroLogo from "../images/adaro-logo.png";
 import ForecastComponent from "../components/forecast-data/ForecastComponent";
@@ -12,11 +13,29 @@ const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
-const ForecastPage = ({ loc, locTitle }) => {
+const ForecastPage = () => {
   const { sm } = useBreakpoint();
   const contentMargin = sm ? 200 : 30;
 
-  const locId = useLocation().pathname.split("/")[2];
+  const params = useParams();
+  const [locations, setLocations] = useState([]);
+  const [loc, setLoc] = useState([]);
+
+  useEffect(() => {
+    const locsCache = JSON.parse(localStorage.getItem("locations"));
+    if (locsCache) {
+      setLocations(locsCache);
+    } else {
+      APIService.GetLocations().then((response) => {
+        localStorage.setItem("locations", JSON.stringify(response));
+        setLocations(response);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    setLoc(locations.filter((el) => el.id === parseInt(params.id)));
+  }, [locations, params]);
 
   return (
     <Layout>
@@ -53,12 +72,18 @@ const ForecastPage = ({ loc, locTitle }) => {
                 <Link to="/">Home</Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                <Link to={`/locs/${locId}`}>{locTitle}</Link>
+                <Link to={`/locs/${params.id}`}>
+                  {loc.length !== 0 ? loc[0].title : "Loading..."}
+                </Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>Forecast</Breadcrumb.Item>
             </Breadcrumb>
-            <Title>Forecast for {locTitle}</Title>
-            <ForecastComponent loc={loc} />
+            <Title>
+              Forecast for {loc.length !== 0 ? loc[0].title : "Loading..."}
+            </Title>
+            <ForecastComponent
+              loc={loc.length !== 0 ? loc[0].name : "loading"}
+            />
           </div>
         </Content>
       </Layout>
