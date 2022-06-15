@@ -1,6 +1,12 @@
 export default class APIService {
   static GetLocations() {
-    return fetch("http://localhost:8000/api/locs/").then((resp) => resp.json());
+    return fetch("http://localhost:8000/api/locs/", {
+      method: "GET",
+      headers: {
+        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
+      },
+    })
+      .then((resp) => resp.json());
   }
 
   static AddLocation(body) {
@@ -8,6 +14,7 @@ export default class APIService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f"
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
@@ -16,6 +23,9 @@ export default class APIService {
   static GetData(locId) {
     return fetch(`http://127.0.0.1:8000/api/locs/data/${locId}`, {
       method: "GET",
+      headers: {
+        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
+      },
     })
       .then((response) => response.json())
       .then((response) =>
@@ -36,11 +46,12 @@ export default class APIService {
       );
   }
 
-  static AddData(body) {
-    return fetch("http://127.0.0.1:8000/api/locs/add-data/", {
+  static AddData(locId, body) {
+    return fetch(`http://127.0.0.1:8000/api/locs/data/${locId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
@@ -51,6 +62,7 @@ export default class APIService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
