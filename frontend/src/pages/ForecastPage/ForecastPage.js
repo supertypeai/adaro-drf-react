@@ -2,20 +2,18 @@ import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Layout, Typography, Grid, Breadcrumb } from "antd";
 
-import Navbar from "../components/navbar/Navbar";
-import SideNavbar from "../components/navbar/SideNavbar";
-import DataComponent from "../components/real-data/DataComponent";
+import Navbar from "../../components/navbar/Navbar";
+import SideNavbar from "../../components/navbar/SideNavbar";
+import APIService from "../../APIService";
+import ForecastComponent from "../../components/forecast-data/ForecastComponent";
 
-import adaroLogo from "../images/adaro-logo.png";
-
-import "./DataPage.css";
-import APIService from "../APIService";
+import adaroLogo from "../../images/adaro-logo.png";
 
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
 const { useBreakpoint } = Grid;
 
-const DataPage = () => {
+const ForecastPage = () => {
   const { sm } = useBreakpoint();
   const contentMargin = sm ? 200 : 30;
 
@@ -33,7 +31,7 @@ const DataPage = () => {
         setLocations(response);
       });
     }
-  }, [params]);
+  }, []);
 
   useEffect(() => {
     setLoc(locations.filter((el) => el.id === parseInt(params.id)));
@@ -47,8 +45,6 @@ const DataPage = () => {
         width={200}
         style={{
           height: "100%",
-          minHeight: "100vh",
-          overflow: "auto",
           position: "fixed",
           left: 0,
           zIndex: 99,
@@ -76,17 +72,17 @@ const DataPage = () => {
                 <Link to="/">Home</Link>
               </Breadcrumb.Item>
               <Breadcrumb.Item>
-                {loc.length !== 0 ? loc[0].title : "Loading..."}
+                <Link to={`/locs/${params.id}`}>
+                  {loc.length !== 0 ? loc[0].title : "Loading..."}
+                </Link>
               </Breadcrumb.Item>
+              <Breadcrumb.Item>Forecast</Breadcrumb.Item>
             </Breadcrumb>
             <Title>
-              Data of {loc.length !== 0 ? loc[0].title : "Loading..."}
+              Forecast for {loc.length !== 0 ? loc[0].title : "Loading..."}
             </Title>
-            <DataComponent
-              loc={loc.length !== 0 ? loc[0].name : "Loading..."}
-              locId={params.id}
-              locTitle={loc.length !== 0 ? loc[0].title : "Loading..."}
-              locCategory={loc.length !== 0 ? loc[0].category : "Loading..."}
+            <ForecastComponent
+              loc={loc.length !== 0 ? loc[0].name : "loading"}
             />
           </div>
         </Content>
@@ -95,4 +91,4 @@ const DataPage = () => {
   );
 };
 
-export default DataPage;
+export default ForecastPage;
