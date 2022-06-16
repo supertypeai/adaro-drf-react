@@ -1,45 +1,95 @@
 import React, { useEffect, useState } from "react";
-import { Table } from "antd";
+import { Table, Popconfirm, Typography } from "antd";
+import APIService from "../../APIService";
 
-const DataTable = ({ loc, data, locCategory }) => {
+const DataTable = ({ loc, data, setData, locCategory }) => {
   const [columns, setColumns] = useState([]);
+  const [tempData, setTempData] = useState([]);
 
   useEffect(() => {
+    setTempData(data);
     if (locCategory === "daily") {
       setColumns([
         {
           title: "Date",
           dataIndex: "date",
-          key: "id",
         },
         {
           title: "Measurement",
           dataIndex: "measurement",
-          key: "id",
         },
+        {
+          title: "Actions",
+          dataIndex: "actions",
+          render: (_, record) => {
+            return (
+              <Popconfirm
+                title="Sure to delete?"
+                onConfirm={() => handleDelete(record)}
+              >
+                <Typography.Link
+                  type="danger"
+                  style={{
+                    marginLeft: 15,
+                  }}
+                >
+                  Delete
+                </Typography.Link>
+              </Popconfirm>
+            )
+          }
+        }
       ]);
     } else {
       setColumns([
         {
           title: "Date",
           dataIndex: "date",
-          key: "id",
         },
         {
           title: "Hour",
           dataIndex: "hour",
-          key: "id",
         },
         {
           title: "Measurement",
           dataIndex: "measurement",
-          key: "id",
         },
+        {
+          title: "Actions",
+          dataIndex: "actions",
+          render: (_, record) => {
+            return (
+              <Popconfirm
+                title="Sure to delete?"
+                onConfirm={() => handleDelete(record)}
+              >
+                <Typography.Link
+                  type="danger"
+                  style={{
+                    marginLeft: 15,
+                  }}
+                >
+                  Delete
+                </Typography.Link>
+              </Popconfirm>
+            )
+          }
+        }
       ]);
     }
-  }, [locCategory]);
+  }, [locCategory, data]);
 
-  return <Table dataSource={data} columns={columns} rowKey="id" />;
+  const handleDelete = (record) => {
+    APIService.DeleteData(record.id)
+      .then((res) => {
+        console.log(res)
+        setTempData((old) => {
+          return old.filter((d) => d.id !== record.id)
+        })
+      })
+  }
+
+  return <Table dataSource={tempData} columns={columns} rowKey="id" />;
 };
 
 export default DataTable;

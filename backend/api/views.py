@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from django.shortcuts import HttpResponse
 from google.cloud import bigquery
 from pandas import DataFrame
 import json
@@ -52,18 +53,48 @@ class LocationListView(viewsets.ModelViewSet):
 @permission_classes(
     [IsAuthenticated,]
 )
-def locationData(request, pk):
+def locationData(request, locId):
     if request.method == "GET":
-        locationData = LocationData.objects.filter(location=pk)
+        locationData = LocationData.objects.filter(location=locId)
         serializer = LocationDataSerializer(locationData, many=True)
         return Response(serializer.data)
+
     elif request.method == "POST":
-        data = request.data
-        serializer = LocationDataSerializer(data=data)
+        newData = request.data
+        serializer = LocationDataSerializer(data=newData)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET", "PUT", "DELETE"])
+@authentication_classes(
+    [TokenAuthentication,]
+)
+@permission_classes(
+    [IsAuthenticated,]
+)
+def singleLocationData(request, pk):
+    try:
+        locData = LocationData.objects.get(pk=pk)
+    except LocationData.DoesNotExist:
+        return HttpResponse(status=404)
+
+    if request.method == "GET":
+        serializer = LocationDataSerializer(locData)
+        return Response(serializer.data)
+
+    elif request.method == "PUT":
+        serializer = LocationDataSerializer(locData, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == "DELETE":
+        locData.delete()
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
 
 # GET BIGQUERY FORECAST DATA

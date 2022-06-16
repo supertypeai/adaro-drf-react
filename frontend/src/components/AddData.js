@@ -38,14 +38,14 @@ const AddData = ({
 
   const location = useLocation();
 
-  useEffect(() => {
-    setNewData({ ...newData, location: locId });
-  }, [location, newData, locId]);
+  // useEffect(() => {
+  //   setNewData({ ...newData, location: locId });
+  // }, [location, newData, locId]);
 
   const [openModal, setOpenModal] = useState(false);
 
   const handleOk = () => {
-    APIService.AddData(newData)
+    APIService.AddData(locId, newData)
       .then((response) => {
         setData([response, ...data]);
         setFilteredData([response, ...data]);

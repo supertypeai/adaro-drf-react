@@ -47,7 +47,7 @@ export default class APIService {
   }
 
   static AddData(locId, body) {
-    return fetch(`http://127.0.0.1:8000/api/locs/data/${locId}`, {
+    return fetch(`http://127.0.0.1:8000/api/locs/data/${locId}/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -55,6 +55,27 @@ export default class APIService {
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
+  }
+
+  static EditData(pk, body) {
+    return fetch(`http://127.0.0.1:8000/api/locs/single-data/${pk}/`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
+      },
+      body: JSON.stringify(body),
+    }).then((response) => response.json());
+  }
+
+  static DeleteData(pk) {
+    return fetch(`http://127.0.0.1:8000/api/locs/single-data/${pk}/`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
+      },
+    })
   }
 
   static getForecastData(body) {

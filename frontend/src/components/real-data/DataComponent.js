@@ -7,6 +7,7 @@ import AddData from "../AddData";
 import APIService from "../../APIService";
 
 import "./DataComponent.css";
+import EditableTable from "./EditableTable";
 
 const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
   const [data, setData] = useState([]);
@@ -79,7 +80,8 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
             </div>
           </div>
 
-          <DataTable data={filteredData} loc={loc} locCategory={locCategory} />
+          {/* <DataTable data={filteredData} setData={setData} loc={loc} locCategory={locCategory} /> */}
+          <EditableTable data={filteredData} setData={setData} loc={loc} locCategory={locCategory}></EditableTable>
         </Space>
       )}
     </>
