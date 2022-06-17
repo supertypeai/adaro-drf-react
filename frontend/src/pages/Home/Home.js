@@ -1,12 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Layout, Typography, Row, Col, Card } from "antd";
-import { useAPI } from "../LocationContext";
+import { useAPI } from "../../LocationContext";
 
-import Navbar from "../components/navbar/Navbar";
-import AddLocation from "../components/AddLocation";
+import Navbar from "../../components/navbar/Navbar";
+import AddLocation from "../../components/AddLocation";
 
-import adaroLogo from "../images/adaro-logo.png";
+import adaroLogo from "../../images/adaro-logo.png";
 
 import "./Home.css";
 
@@ -32,7 +32,7 @@ const Home = () => {
           </div>
 
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            {locations.map((location) => {
+            {Array.isArray(locations) && locations.map((location) => {
               return (
                 <Col xs={24} md={12} lg={8} key={location.id}>
                   <Link to={`/locs/${location.id}`}>

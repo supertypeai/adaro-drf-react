@@ -1,15 +1,19 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import Home from "../pages/Home";
-import DataPage from "../pages/DataPage";
-import ForecastPage from "../pages/ForecastPage";
+import Home from "../pages/Home/Home";
+import DataPage from "../pages/DataPage/DataPage";
+import ForecastPage from "../pages/ForecastPage/ForecastPage";
+import LoginPage from "../pages/LoginPage/LoginPage";
+import SignupPage from "../pages/LoginPage/SignupPage";
 
 const MainRouter = () => {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} exact />
+        <Route path="/login" element={<LoginPage />} exact />
+        <Route path="/signup" element={<SignupPage />} exact />
         {/* {locations.map((location) => {
           return ( */}
         <>
