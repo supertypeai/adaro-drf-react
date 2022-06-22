@@ -10,7 +10,7 @@ urlpatterns = [
     # path('', views.apiOverview, name='api-overview'),
     path("", include(router.urls)),
     path("locs/data/<int:locId>/", views.locationData, name="locs-data"),
-    path("locs/forecast-data/", views.getForecastData, name="forecast-data"),
+    # path("locs/forecast-data/", views.getForecastData, name="forecast-data"),
     path(
         "locs/single-data/<int:pk>/",
         views.singleLocationData,

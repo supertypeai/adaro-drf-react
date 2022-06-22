@@ -3,7 +3,7 @@ export default class APIService {
     return fetch("http://localhost:8000/api/locs/", {
       method: "GET",
       headers: {
-        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
+        "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56",
       },
     })
       .then((resp) => resp.json());
@@ -14,7 +14,7 @@ export default class APIService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f"
+        "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
@@ -24,7 +24,7 @@ export default class APIService {
     return fetch(`http://127.0.0.1:8000/api/locs/data/${locId}`, {
       method: "GET",
       headers: {
-        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
+        "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56",
       },
     })
       .then((response) => response.json())
@@ -51,7 +51,7 @@ export default class APIService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
+        "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56",
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
@@ -62,7 +62,7 @@ export default class APIService {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
+        "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56",
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
@@ -73,17 +73,17 @@ export default class APIService {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
+        "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56",
       },
     })
   }
 
   static getForecastData(body) {
-    return fetch("http://127.0.0.1:8000/api/locs/forecast-data/", {
+    return fetch("http://127.0.0.1:8000/bq/locs/forecast-data/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
+        "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56",
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
