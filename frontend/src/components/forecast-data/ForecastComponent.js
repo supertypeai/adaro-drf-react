@@ -39,7 +39,7 @@ const ForecastComponent = ({ loc }) => {
     <>
       {isLoading ? (
         <Skeleton active />
-      ) : weeklyData.length > 0 ? (
+       ) : weeklyData.length > 0 ? ( 
         <Space
           direction="vertical"
           size="large"
@@ -57,7 +57,7 @@ const ForecastComponent = ({ loc }) => {
             <br />
             <WeeklyTableModal tableWeeklyData={tableWeeklyData} />
           </div>
-          {loc === "muara_tuhup" ? (
+          {loc === "muara_tuhup" ? ( 
             <>
               <Divider />
               <Title level={2}>Three Months Forecast</Title>
@@ -71,11 +71,11 @@ const ForecastComponent = ({ loc }) => {
                 </div>
               </div>
             </>
-          ) : null}
+          ) : null} 
         </Space>
-      ) : (
+        ) : ( 
         <Title>No Forecast Data Yet</Title>
-      )}
+      )}  
     </>
   );
 };
