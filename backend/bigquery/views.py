@@ -38,50 +38,50 @@ def getForecastData(request):
 
     if request.method == "POST":
         loc_requested = json.loads(request.body)
-        # if loc_requested == "muara_tuhup":
+        if loc_requested == "muara_tuhup":
 
-        # Weekly Forecast Data
-        mt_forecast_dataset = (
-            "adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test"
-        )
-        mt_one_week_forecast = [
-            table.table_id for table in client.list_tables(mt_forecast_dataset)
-        ][-7:]
-
-        mt_forecast_list = []
-
-        for day in mt_one_week_forecast:
-            query_string = f"""
-                SELECT *
-                FROM `adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test.{day}`
-            """
-
-            forecast_query_result = client.query(query_string).result()
-
-            records = [dict(row) for row in forecast_query_result]
-            mt_forecast_list.extend(records)
-
-            mt_forecast_list = sorted(
-                mt_forecast_list,
-                key=lambda x: (x["date"], (float(x["hour"]) - 6) % 24),
+            # Weekly Forecast Data
+            mt_forecast_dataset = (
+                "adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test"
             )
+            mt_one_week_forecast = [
+                table.table_id for table in client.list_tables(mt_forecast_dataset)
+            ][-7:]
 
-            mt_forecast_df = DataFrame(mt_forecast_list)
+            mt_forecast_list = []
 
-            # Turn dataframe to long format
-            mt_forecast_df_melted = mt_forecast_df.melt(
-                id_vars=["date", "hour"])
-            mt_forecast_json = mt_forecast_df_melted.to_json(
-                orient="records")
+            for day in mt_one_week_forecast:
+                query_string = f"""
+                    SELECT *
+                    FROM `adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test.{day}`
+                """
 
-            mt_forecast_wide = mt_forecast_df[["date", "hour", "predict"]]
+                forecast_query_result = client.query(query_string).result()
 
-            mt_forecast_wide["Status"] = mt_forecast_wide.apply(
-                lambda row: sail_status(row), axis=1
-            )
+                records = [dict(row) for row in forecast_query_result]
+                mt_forecast_list.extend(records)
 
-            mt_forecast_wide_json = mt_forecast_wide.to_json(
-                orient="records")
+                mt_forecast_list = sorted(
+                    mt_forecast_list,
+                    key=lambda x: (x["date"], (float(x["hour"]) - 6) % 24),
+                )
+
+                mt_forecast_df = DataFrame(mt_forecast_list)
+
+                # Turn dataframe to long format
+                mt_forecast_df_melted = mt_forecast_df.melt(
+                    id_vars=["date", "hour"])
+                mt_forecast_json = mt_forecast_df_melted.to_json(
+                    orient="records")
+
+                mt_forecast_wide = mt_forecast_df[["date", "hour", "predict"]]
+
+                mt_forecast_wide["Status"] = mt_forecast_wide.apply(
+                    lambda row: sail_status(row), axis=1
+                )
+
+                mt_forecast_wide_json = mt_forecast_wide.to_json(
+                    orient="records")
 
             # Monthly Forecast Data
             table_id = "adaro-data-warehouse.muara_tuhup_loadabledays_forecast.forecast_loadabledays"
@@ -106,5 +106,5 @@ def getForecastData(request):
                 }
             )
 
-        # else:  # Insert other locations' forecast here!
-        #     return JsonResponse({"response": "empty"})
+        else:  # Insert other locations' forecast here!
+            return JsonResponse({"response": "empty"})
