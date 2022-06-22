@@ -26,7 +26,9 @@ const ForecastComponent = ({ loc }) => {
           if (resp.response === "success") {
             setWeeklyData(JSON.parse(resp.data));
             setTableWeeklyData(JSON.parse(resp.data_wide));
-            setMonthlyData(JSON.parse(resp.monthly_data));
+            if (loc === 'muara_tuhup') {
+              setMonthlyData(JSON.parse(resp.monthly_data));
+            }
           } else if (resp.response === "empty") {
             setWeeklyData([]);
           }
@@ -39,7 +41,7 @@ const ForecastComponent = ({ loc }) => {
     <>
       {isLoading ? (
         <Skeleton active />
-       ) : weeklyData.length > 0 ? ( 
+      ) : weeklyData.length > 0 ? (
         <Space
           direction="vertical"
           size="large"
@@ -53,11 +55,11 @@ const ForecastComponent = ({ loc }) => {
             }}
           >
             <Title level={2}>Weekly Forecast</Title>
-            <WeeklyForecastGraph weeklyData={weeklyData} />
+            <WeeklyForecastGraph loc={loc} weeklyData={weeklyData} />
             <br />
             <WeeklyTableModal tableWeeklyData={tableWeeklyData} />
           </div>
-          {loc === "muara_tuhup" ? ( 
+          {loc === "muara_tuhup" ? (
             <>
               <Divider />
               <Title level={2}>Three Months Forecast</Title>
@@ -71,11 +73,11 @@ const ForecastComponent = ({ loc }) => {
                 </div>
               </div>
             </>
-          ) : null} 
+          ) : null}
         </Space>
-        ) : ( 
+      ) : (
         <Title>No Forecast Data Yet</Title>
-      )}  
+      )}
     </>
   );
 };
