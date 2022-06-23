@@ -11,8 +11,18 @@ import "./LoginPage.css";
 
 const LoginPage = () => {
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [loginInfo, setLoginInfo] = useState({
+    username:"", 
+    password:""
+  });
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setLoginInfo(prevState => ({
+      ...prevState,
+      [name] : value
+    }));
+  };
 
   return(
     <div className="login-page">
@@ -40,7 +50,7 @@ const LoginPage = () => {
               size="large"
               placeholder="Username"
               prefix={<UserOutlined />}
-              onChange={(event) => setUsername(event.target.value)}
+              onChange={handleChange}
             />
           </Form.Item>
 
@@ -52,7 +62,7 @@ const LoginPage = () => {
               size="large"
               placeholder="Password"
               prefix={<LockOutlined />}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={handleChange}
             />
           </Form.Item>
           <Form.Item>
