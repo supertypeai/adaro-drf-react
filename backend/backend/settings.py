@@ -143,11 +143,11 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
 # GOOGLE BIGQUERY CREDENTIAL
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/Users/owenngimli/Documents/Programming/02-Web Development/01-Django/01 - Adaro River/credentials/adaro-data-warehouse-00f03ed46103.json'
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "D:/Supertype/2021-2022/adaro-drf-react/backend/adaro-data-warehouse-7005b9f0c27e.json"
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ]
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework.authentication.TokenAuthentication',
+#     ),
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.IsAuthenticated',
+#     ]
+# }
