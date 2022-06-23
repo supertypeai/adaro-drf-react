@@ -12,7 +12,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
-from django.shortcuts import HttpResponse
+from django.shortcuts import HttpResponse, get_object_or_404
+from django.core.mail import send_mail
 from google.cloud import bigquery
 from pandas import DataFrame
 import json
@@ -97,6 +98,59 @@ def singleLocationData(request, pk):
         return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserView(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+# class UserView(viewsets.ModelViewSet):
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
+
+
+class UserView(viewsets.ViewSet):
+    def list(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        raw_password = User.objects.make_random_password()
+        request.data["password"] = raw_password
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            send_mail(
+                "Account Successfully Created",
+                f"""
+You have created a new account for the ADARO Web App - Barito River
+Your login details are as follows:
+
+Username: {request.data['username']}
+Password: {raw_password}
+
+Note: The password above is randomly generated. Do change it to your personal password on the homepage where you can find a "Change Password" option.
+*Email is auto-generated. Please do not reply.
+                """,
+                "adaro@supertype.ai",
+                [request.data["email"]],
+            )
+            print("mail sent")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        serializer = UserSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

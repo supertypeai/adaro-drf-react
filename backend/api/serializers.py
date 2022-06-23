@@ -2,34 +2,45 @@ from rest_framework import serializers
 from .models import Location, LocationData
 from django.contrib.auth.models import User
 from rest_framework.authtoken.views import Token
+from django.db.models import Q
 
 
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
-        fields = '__all__'
+        fields = "__all__"
 
 
 class LocationDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = LocationData
-        fields = '__all__'
+        fields = "__all__"
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'password']
+        fields = ["id", "username", "email", "password"]
 
         # This is to prevent the password from being displayed in the API and hash it.
-        extra_kwargs = {'password':
-                        {
-                            'write_only': True,
-                            'required': True
-                        }}
+        extra_kwargs = {
+            "password": {"write_only": True, "required": True},
+            "email": {"required": True},
+        }
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         # This is to automatically create a token for each user being created.
         Token.objects.create(user=user)
         return user
+
+    def validate(self, data):
+        email = data.get("email")
+        username = data.get("username")
+
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            raise serializers.ValidationError({"email": "The email has been taken"})
+
+        return super().validate(data)
