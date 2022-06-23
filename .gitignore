@@ -30,3 +30,9 @@ db.sqlite3
 
 # environment variables used to store sensitive information
 .env
+
+backend/adaro-data-warehouse-7005b9f0c27e.json
+backend/api/__pycache__/
+backend/api/management/commands/__pycache__/load_data.cpython-38.pyc
+backend/api/migrations/__pycache__/
+backend/backend/__pycache__/
