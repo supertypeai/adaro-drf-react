@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Skeleton, Space, Grid, DatePicker, Button } from "antd";
 
-import DataTable from "./DataTable";
 import DataGraph from "./DataGraph";
 import AddData from "../AddData";
 import APIService from "../../APIService";

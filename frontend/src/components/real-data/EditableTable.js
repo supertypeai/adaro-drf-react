@@ -1,4 +1,4 @@
-import { Form, InputNumber, Input, Popconfirm, Table, Typography } from 'antd';
+import { Form, Popconfirm, Table, Typography } from 'antd';
 import { useState, useEffect } from 'react';
 import EditableCell from './EditableCell';
 
