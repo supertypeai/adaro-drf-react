@@ -107,9 +107,25 @@ export default class APIService {
       .then((response) => {
         if(response.status === 400){
           throw response;
-        } else {
-          response.json();
-        }
+        } 
+        return response.json();
       })
+  }
+
+  static loginUser(body) {
+    return fetch("http://127.0.0.1:8000/auth/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body),
+      })
+      .then((response) => {
+        console.log(response)
+        if(response.status === 400){
+          throw response;
+        } 
+        return response.json();
+    })
   }
 }

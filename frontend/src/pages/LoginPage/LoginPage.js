@@ -52,6 +52,7 @@ const LoginPage = () => {
     setLoading(true);
     APIService.registerUser(signupInfo)
       .then(response => {
+        console.log(`regis ${response}`)
         setError(false);
         setLoading(false);
         setMessage({
@@ -75,8 +76,10 @@ const LoginPage = () => {
     const handleLoginSubmit = (event) => {
       event.preventDefault();
       setLoading(true);
-      APIService.registerUser(signupInfo)
+      APIService.loginUser(loginInfo)
         .then(response => {
+          console.log(`login ${response}`)
+          sessionStorage.setItem("token", response.token);
           setError(false);
           setTimeout(() => navigate("/"), 2000);
         })
@@ -111,6 +114,7 @@ const LoginPage = () => {
         <Form
           name="login-form"
           initialValues={{ remember: true }}
+          onSubmitCapture={ handleLoginSubmit }
         >
             <p className="form-title">Welcome Back</p>
             {visible ? (
