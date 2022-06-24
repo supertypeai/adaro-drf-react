@@ -8,6 +8,7 @@ from rest_framework.decorators import (
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -19,7 +20,12 @@ from pandas import DataFrame
 import json
 
 from .models import Location, LocationData
-from .serializers import LocationSerializer, LocationDataSerializer, UserSerializer
+from .serializers import (
+    LocationSerializer,
+    LocationDataSerializer,
+    UserSerializer,
+    MyTokenObtainPairSerializer,
+)
 
 
 # Create your views here.
@@ -39,18 +45,18 @@ from .serializers import LocationSerializer, LocationDataSerializer, UserSeriali
 #     return Response(api_urls)
 
 
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+
 class LocationListView(viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
     permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
 
 
 @api_view(["GET", "POST"])
-@authentication_classes(
-    [TokenAuthentication,]
-)
 @permission_classes(
     [IsAuthenticated,]
 )
@@ -70,9 +76,6 @@ def locationData(request, locId):
 
 
 @api_view(["GET", "PUT", "DELETE"])
-@authentication_classes(
-    [TokenAuthentication,]
-)
 @permission_classes(
     [IsAuthenticated,]
 )
@@ -141,14 +144,14 @@ Note: The password above is randomly generated. Do change it to your personal pa
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
-    def update(self, request, pk=None):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, pk=pk)
-        serializer = UserSerializer(user, data=request.data, context={"id": pk})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def update(self, request, pk=None):
+    #     queryset = User.objects.all()
+    #     user = get_object_or_404(queryset, pk=pk)
+    #     serializer = UserSerializer(user, data=request.data, context={"id": pk})
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk=None):
         queryset = User.objects.all()

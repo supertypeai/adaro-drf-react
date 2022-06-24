@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Location, LocationData
 from django.contrib.auth.models import User
 from rest_framework.authtoken.views import Token
@@ -15,6 +16,19 @@ class LocationDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = LocationData
         fields = "__all__"
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token["username"] = user.username
+        token["email"] = user.email
+        # ...
+
+        return token
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -34,7 +48,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
 
         # This is to automatically create a token for each user being created.
-        Token.objects.create(user=user)
+        # Token.objects.create(user=user)
         return user
 
     def validate(self, data):
