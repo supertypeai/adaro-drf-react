@@ -47,7 +47,7 @@ class UserSerializer(serializers.ModelSerializer):
 
                 if user:
                     raise serializers.ValidationError(
-                        {"email": f"The email has been taken pertama {current_email}"})
+                        {"email": f"The email has been taken"})
         else:
             user = User.objects.filter(email=email).first()
             if user:

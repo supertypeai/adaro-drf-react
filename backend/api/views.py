@@ -111,6 +111,7 @@ class UserView(viewsets.ViewSet):
 
     def create(self, request):
         raw_password = User.objects.make_random_password()
+        print(raw_password)
         request.data["password"] = raw_password
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
