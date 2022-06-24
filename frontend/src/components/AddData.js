@@ -38,7 +38,7 @@ const AddData = ({
   });
 
   const location = useLocation();
-  const { token } = useLogin();
+  const { authTokens } = useLogin();
 
   // useEffect(() => {
   //   setNewData({ ...newData, location: locId });
@@ -47,7 +47,7 @@ const AddData = ({
   const [openModal, setOpenModal] = useState(false);
 
   const handleOk = () => {
-    APIService.AddData(locId, newData, token)
+    APIService.AddData(locId, newData, authTokens.access)
       .then((response) => {
         setData([response, ...data]);
         setFilteredData([response, ...data]);

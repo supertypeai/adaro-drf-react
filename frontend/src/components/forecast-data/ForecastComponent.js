@@ -18,12 +18,12 @@ const ForecastComponent = ({ loc }) => {
   const [tableWeeklyData, setTableWeeklyData] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { token } = useLogin();
+  const { authTokens } = useLogin();
 
   useEffect(() => {
     setIsLoading(true);
     if (loc !== "loading") {
-      APIService.getForecastData(loc, token)
+      APIService.getForecastData(loc, authTokens.access)
         .then((resp) => {
           if (resp.response === "success") {
             setWeeklyData(JSON.parse(resp.data));
@@ -37,7 +37,7 @@ const ForecastComponent = ({ loc }) => {
         })
         .then(() => setIsLoading(false));
     }
-  }, [loc, token]);
+  }, [loc, authTokens]);
 
   return (
     <>

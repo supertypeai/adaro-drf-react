@@ -17,18 +17,18 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
 
   const { useBreakpoint } = Grid;
   const { md } = useBreakpoint();
-  const { token } = useLogin();
+  const { authTokens } = useLogin();
 
   useEffect(() => {
     setLoading(true);
-    APIService.GetData(locId, token)
+    APIService.GetData(locId, authTokens.access)
       .then((response) => {
         setData(response);
         setFilteredData(response);
         setLoading(false);
       })
       .catch((error) => console.log(error));
-  }, [locId, loc, token]);
+  }, [locId, loc, authTokens]);
 
   const handleDate = (_, dateString) => {
     setFilterDate(dateString);

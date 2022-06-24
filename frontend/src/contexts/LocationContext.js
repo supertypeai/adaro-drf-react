@@ -6,13 +6,13 @@ const LocationContext = createContext();
 
 export function LocationProvider({ children }) {
   const [locations, setLocations] = useState([]);
-  const { token } = useLogin();
+  const { authTokens } = useLogin();
 
   useEffect(() => {
-    APIService.GetLocations(token).then((response) => {
+    APIService.GetLocations(authTokens.access).then((response) => {
       setLocations(response);
     });
-  }, [token]);
+  }, [authTokens]);
   return (
     <LocationContext.Provider
       value={{

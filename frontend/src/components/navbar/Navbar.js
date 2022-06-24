@@ -5,15 +5,15 @@ import { useLogin } from "../../contexts/UserContext";
 const { SubMenu } = Menu;
 
 const Navbar = () => {
-  const { setToken } = useLogin();
+  const { setAuthTokens } = useLogin();
 
   const handleLogout = (event) => {
     event.preventDefault();
-  
-    sessionStorage.removeItem("token");
-    setToken(null);
+
+    sessionStorage.removeItem("authTokens");
+    setAuthTokens(null);
     window.location.reload();
-    
+
   }
 
   return (

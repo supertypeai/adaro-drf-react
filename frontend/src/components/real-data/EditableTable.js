@@ -10,7 +10,7 @@ const EditableTable = ({ loc, data, setData, locCategory }) => {
     const [form] = Form.useForm();
 
     const [editingKey, setEditingKey] = useState('');
-    const { token } = useLogin();
+    const { authTokens } = useLogin();
 
     useEffect(() => {
         setTempData(data);
@@ -130,7 +130,7 @@ const EditableTable = ({ loc, data, setData, locCategory }) => {
                 hour: updatedEntry.hour,
                 measurement: updatedEntry.measurement,
                 location: updatedEntry.location
-            }, token).then(() => {
+            }, authTokens.access).then(() => {
                 console.log('Data updated on the backend!')
                 setTempData(newData);
                 setEditingKey('');
@@ -141,7 +141,7 @@ const EditableTable = ({ loc, data, setData, locCategory }) => {
     };
 
     const handleDelete = (record) => {
-        APIService.DeleteData(record.id, token)
+        APIService.DeleteData(record.id, authTokens.access)
             .then((res) => {
                 console.log(res)
                 setTempData((old) => {

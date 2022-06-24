@@ -6,7 +6,7 @@ import APIService from "../../APIService";
 const DataTable = ({ loc, data, setData, locCategory }) => {
   const [columns, setColumns] = useState([]);
   const [tempData, setTempData] = useState([]);
-  const { token } = useLogin();
+  const { authTokens } = useLogin();
 
   useEffect(() => {
     setTempData(data);
@@ -82,7 +82,7 @@ const DataTable = ({ loc, data, setData, locCategory }) => {
   }, [locCategory, data]);
 
   const handleDelete = (record) => {
-    APIService.DeleteData(record.id, token)
+    APIService.DeleteData(record.id, authTokens.access)
       .then((res) => {
         console.log(res)
         setTempData((old) => {
