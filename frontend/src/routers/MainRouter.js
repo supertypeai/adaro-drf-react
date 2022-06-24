@@ -5,7 +5,6 @@ import Home from "../pages/Home/Home";
 import DataPage from "../pages/DataPage/DataPage";
 import ForecastPage from "../pages/ForecastPage/ForecastPage";
 import LoginPage from "../pages/LoginPage/LoginPage";
-import SignupPage from "../pages/LoginPage/SignupPage";
 
 const MainRouter = () => {
   return (
@@ -13,7 +12,6 @@ const MainRouter = () => {
       <Routes>
         <Route path="/" element={<Home />} exact />
         <Route path="/login" element={<LoginPage />} exact />
-        <Route path="/signup" element={<SignupPage />} exact />
         {/* {locations.map((location) => {
           return ( */}
         <>
@@ -39,8 +37,6 @@ const MainRouter = () => {
           <Route path={`/locs/:id`} element={<DataPage />} exact />
           <Route path={`/locs/:id/forecast`} element={<ForecastPage />} />
         </>
-        );
-        {/* })} */}
       </Routes>
     </Router>
   );

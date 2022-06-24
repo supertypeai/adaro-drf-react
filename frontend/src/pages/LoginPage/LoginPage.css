@@ -24,10 +24,6 @@
   font-family: "Montserrat", sans-serif;
 }
 .login-box {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row-reverse;
   min-width: 35%;
   background: rgba(10, 7, 7, 0.5);
   backdrop-filter: blur(4px);
@@ -51,7 +47,7 @@
   font-size: calc(16px + 2vmin);
   font-weight: bold;
   line-height: 1;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 #login-form small {
   font-size: 14px;
@@ -111,6 +107,14 @@
   font-size: 5rem;
   font-weight: bold;
   margin-bottom: 10px;
+}
+
+.link {
+  color: blue;
+}
+
+:hover .link {
+  cursor: pointer;
 }
 
 @media screen and (max-width: 1120px) {

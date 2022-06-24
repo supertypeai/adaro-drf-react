@@ -105,7 +105,6 @@ export default class APIService {
       body: JSON.stringify(body),
       })
       .then((response) => {
-        console.log(response)
         if(response.status === 400){
           throw response;
         } else {

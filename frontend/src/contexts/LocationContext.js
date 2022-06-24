@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect, createContext } from "react";
-import APIService from "./APIService";
+import APIService from "../APIService";
 
 const LocationContext = createContext();
 

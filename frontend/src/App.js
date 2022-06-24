@@ -1,7 +1,7 @@
 import "./App.less";
 
 import MainRouter from "./routers/MainRouter";
-import { LocationProvider } from "./LocationContext";
+import { LocationProvider } from "./contexts/LocationContext";
 
 const App = () => {
   return (

@@ -1,7 +1,7 @@
 import React from "react";
 import { Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
-import { useAPI } from "../../LocationContext";
+import { useAPI } from "../../contexts/LocationContext";
 
 const SideNavbar = () => {
   const { locations } = useAPI();
