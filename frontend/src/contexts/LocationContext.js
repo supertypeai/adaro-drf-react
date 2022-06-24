@@ -1,15 +1,18 @@
 import React, { useContext, useState, useEffect, createContext } from "react";
 import APIService from "../APIService";
+import { useLogin } from "./UserContext";
 
 const LocationContext = createContext();
 
 export function LocationProvider({ children }) {
   const [locations, setLocations] = useState([]);
+  const { token } = useLogin();
+
   useEffect(() => {
-    APIService.GetLocations().then((response) => {
+    APIService.GetLocations(token).then((response) => {
       setLocations(response);
     });
-  }, []);
+  }, [token]);
   return (
     <LocationContext.Provider
       value={{

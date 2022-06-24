@@ -12,6 +12,7 @@ import { PlusOutlined } from "@ant-design/icons";
 
 import APIService from "../APIService";
 import { useAPI } from "../contexts/LocationContext";
+import { useLogin } from "../contexts/UserContext";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -28,9 +29,10 @@ const AddLocation = () => {
   const [openModal, setOpenModal] = useState(false);
 
   const { locations, setLocations } = useAPI();
+  const { token } = useLogin();
 
   const handleOk = () => {
-    APIService.AddLocation(newLocation)
+    APIService.AddLocation(newLocation.category, token)
       .then((resp) => setLocations([...locations, resp]))
       .then(setOpenModal(false));
   };

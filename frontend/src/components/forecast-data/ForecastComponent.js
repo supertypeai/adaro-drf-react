@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Skeleton, Typography, Space, Divider } from "antd";
+import { useLogin } from "../../contexts/UserContext";
 
 import APIService from "../../APIService";
 import WeeklyForecastGraph from "./weekly-forecast/WeeklyForecastGraph";
@@ -17,11 +18,12 @@ const ForecastComponent = ({ loc }) => {
   const [tableWeeklyData, setTableWeeklyData] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { token } = useLogin();
 
   useEffect(() => {
     setIsLoading(true);
     if (loc !== "loading") {
-      APIService.getForecastData(loc)
+      APIService.getForecastData(loc, token)
         .then((resp) => {
           if (resp.response === "success") {
             setWeeklyData(JSON.parse(resp.data));
@@ -35,7 +37,7 @@ const ForecastComponent = ({ loc }) => {
         })
         .then(() => setIsLoading(false));
     }
-  }, [loc]);
+  }, [loc, token]);
 
   return (
     <>
