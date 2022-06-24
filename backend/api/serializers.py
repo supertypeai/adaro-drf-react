@@ -35,12 +35,22 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def validate(self, data):
+        id = self.context.get("id")
         email = data.get("email")
-        username = data.get("username")
 
-        user = User.objects.filter(email=email).first()
+        current_user = User.objects.filter(id=id)
+        if current_user:
+            current_email = User.objects.filter(
+                id=id).values('email')[0]["email"]
+            if current_email != email:
+                user = User.objects.filter(email=email).first()
 
-        if user:
-            raise serializers.ValidationError({"email": "The email has been taken"})
-
+                if user:
+                    raise serializers.ValidationError(
+                        {"email": f"The email has been taken pertama {current_email}"})
+        else:
+            user = User.objects.filter(email=email).first()
+            if user:
+                raise serializers.ValidationError(
+                    {"email": "The email has been taken"})
         return super().validate(data)
