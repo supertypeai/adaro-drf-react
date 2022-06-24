@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Skeleton, Space, Grid, DatePicker, Button } from "antd";
+import { useLogin } from "../../contexts/UserContext";
 
 import DataGraph from "./DataGraph";
 import AddData from "../AddData";
@@ -16,17 +17,18 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
 
   const { useBreakpoint } = Grid;
   const { md } = useBreakpoint();
+  const { token } = useLogin();
 
   useEffect(() => {
     setLoading(true);
-    APIService.GetData(locId)
+    APIService.GetData(locId, token)
       .then((response) => {
         setData(response);
         setFilteredData(response);
         setLoading(false);
       })
       .catch((error) => console.log(error));
-  }, [locId, loc]);
+  }, [locId, loc, token]);
 
   const handleDate = (_, dateString) => {
     setFilterDate(dateString);

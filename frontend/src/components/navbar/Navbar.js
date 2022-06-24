@@ -1,10 +1,21 @@
 import React from "react";
 import { Menu } from "antd";
 import { Link } from "react-router-dom";
-
+import { useLogin } from "../../contexts/UserContext";
 const { SubMenu } = Menu;
 
 const Navbar = () => {
+  const { setToken } = useLogin();
+
+  const handleLogout = (event) => {
+    event.preventDefault();
+  
+    sessionStorage.removeItem("token");
+    setToken(null);
+    window.location.reload();
+    
+  }
+
   return (
     <Menu
       theme="dark"
@@ -24,7 +35,7 @@ const Navbar = () => {
           <Link to="/">Reset Password</Link>
         </Menu.Item>
         <Menu.Item key="2.2">
-          <Link to="/">Logout</Link>
+          <span onClick={(event) => handleLogout(event)}>Logout</span>
         </Menu.Item>
       </SubMenu>
     </Menu>

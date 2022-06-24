@@ -17,7 +17,7 @@ const SideNavbar = () => {
         borderRight: 0,
       }}
     >
-      {locations.map((location) => {
+      {Array.isArray(locations) && locations.map((location) => {
         return (
           <SubMenu key={location.id} title={location.title}>
             <Menu.Item key={`${location.id}.1`}>

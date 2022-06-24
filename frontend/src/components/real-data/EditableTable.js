@@ -1,5 +1,6 @@
 import { Form, Popconfirm, Table, Typography } from 'antd';
 import { useState, useEffect } from 'react';
+import { useLogin } from '../../contexts/UserContext';
 import EditableCell from './EditableCell';
 
 import APIService from '../../APIService';
@@ -9,6 +10,7 @@ const EditableTable = ({ loc, data, setData, locCategory }) => {
     const [form] = Form.useForm();
 
     const [editingKey, setEditingKey] = useState('');
+    const { token } = useLogin();
 
     useEffect(() => {
         setTempData(data);
@@ -128,7 +130,7 @@ const EditableTable = ({ loc, data, setData, locCategory }) => {
                 hour: updatedEntry.hour,
                 measurement: updatedEntry.measurement,
                 location: updatedEntry.location
-            }).then(() => {
+            }, token).then(() => {
                 console.log('Data updated on the backend!')
                 setTempData(newData);
                 setEditingKey('');
@@ -139,7 +141,7 @@ const EditableTable = ({ loc, data, setData, locCategory }) => {
     };
 
     const handleDelete = (record) => {
-        APIService.DeleteData(record.id)
+        APIService.DeleteData(record.id, token)
             .then((res) => {
                 console.log(res)
                 setTempData((old) => {
