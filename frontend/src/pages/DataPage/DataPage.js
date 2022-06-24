@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Layout, Typography, Grid, Breadcrumb } from "antd";
 import { useLogin } from "../../contexts/UserContext";
 
@@ -26,6 +26,7 @@ const DataPage = () => {
   const [loc, setLoc] = useState([]);
 
   const { token } = useLogin();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const locsCache = JSON.parse(localStorage.getItem("locations"));
@@ -37,7 +38,11 @@ const DataPage = () => {
         setLocations(response);
       });
     }
-  }, [params, token]);
+
+    if(!token){
+      navigate("../../login");
+    }
+  }, [params, token, navigate]);
 
   useEffect(() => {
     setLoc(locations.filter((el) => el.id === parseInt(params.id)));

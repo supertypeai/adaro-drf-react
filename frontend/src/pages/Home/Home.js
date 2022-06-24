@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Layout, Typography, Row, Col, Card } from "antd";
 import { useAPI } from "../../contexts/LocationContext";
 import { useLogin } from "../../contexts/UserContext";
@@ -17,6 +17,14 @@ const { Title } = Typography;
 const Home = () => {
   const { locations } = useAPI();
   const { token } = useLogin();
+
+  const navigate= useNavigate();
+
+  useEffect(() => {
+    if(!token){
+      navigate("/login");
+    }
+  }, [token, navigate])
 
   return (
     <Layout>
