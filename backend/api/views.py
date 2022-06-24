@@ -49,10 +49,10 @@ class LocationListView(viewsets.ModelViewSet):
 
 @api_view(["GET", "POST"])
 @authentication_classes(
-    [TokenAuthentication, ]
+    [TokenAuthentication,]
 )
 @permission_classes(
-    [IsAuthenticated, ]
+    [IsAuthenticated,]
 )
 def locationData(request, locId):
     if request.method == "GET":
@@ -71,10 +71,10 @@ def locationData(request, locId):
 
 @api_view(["GET", "PUT", "DELETE"])
 @authentication_classes(
-    [TokenAuthentication, ]
+    [TokenAuthentication,]
 )
 @permission_classes(
-    [IsAuthenticated, ]
+    [IsAuthenticated,]
 )
 def singleLocationData(request, pk):
     try:
@@ -144,8 +144,7 @@ Note: The password above is randomly generated. Do change it to your personal pa
     def update(self, request, pk=None):
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
-        serializer = UserSerializer(
-            user, data=request.data, context={"id": pk})
+        serializer = UserSerializer(user, data=request.data, context={"id": pk})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

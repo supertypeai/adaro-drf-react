@@ -29,7 +29,10 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
+        user = User(email=validated_data["email"], username=validated_data["username"])
+        user.set_password(validated_data["password"])
+        user.save()
+
         # This is to automatically create a token for each user being created.
         Token.objects.create(user=user)
         return user
@@ -40,17 +43,16 @@ class UserSerializer(serializers.ModelSerializer):
 
         current_user = User.objects.filter(id=id)
         if current_user:
-            current_email = User.objects.filter(
-                id=id).values('email')[0]["email"]
+            current_email = User.objects.filter(id=id).values("email")[0]["email"]
             if current_email != email:
                 user = User.objects.filter(email=email).first()
 
                 if user:
                     raise serializers.ValidationError(
-                        {"email": f"The email has been taken"})
+                        {"email": f"The email has been taken"}
+                    )
         else:
             user = User.objects.filter(email=email).first()
             if user:
-                raise serializers.ValidationError(
-                    {"email": "The email has been taken"})
+                raise serializers.ValidationError({"email": "The email has been taken"})
         return super().validate(data)
