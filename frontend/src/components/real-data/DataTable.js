@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Table, Popconfirm, Typography } from "antd";
+import { useLogin } from "../../contexts/UserContext";
 import APIService from "../../APIService";
 
 const DataTable = ({ loc, data, setData, locCategory }) => {
   const [columns, setColumns] = useState([]);
   const [tempData, setTempData] = useState([]);
+  const { token } = useLogin();
 
   useEffect(() => {
     setTempData(data);
@@ -80,7 +82,7 @@ const DataTable = ({ loc, data, setData, locCategory }) => {
   }, [locCategory, data]);
 
   const handleDelete = (record) => {
-    APIService.DeleteData(record.id)
+    APIService.DeleteData(record.id, token)
       .then((res) => {
         console.log(res)
         setTempData((old) => {

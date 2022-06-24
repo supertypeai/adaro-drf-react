@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Layout, Typography, Row, Col, Card } from "antd";
 import { useAPI } from "../../contexts/LocationContext";
+import { useLogin } from "../../contexts/UserContext";
 
 import Navbar from "../../components/navbar/Navbar";
 import AddLocation from "../../components/AddLocation";
@@ -15,6 +16,7 @@ const { Title } = Typography;
 
 const Home = () => {
   const { locations } = useAPI();
+  const { token } = useLogin();
 
   return (
     <Layout>

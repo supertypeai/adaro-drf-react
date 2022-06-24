@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Alert, Spin } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { useLogin } from "../../contexts/UserContext";
 
 import APIService from "../../APIService";
 
@@ -14,6 +15,7 @@ import "./LoginPage.css";
 const LoginPage = () => {
 
   const navigate = useNavigate();
+  const { setToken } = useLogin();
 
   const [status, setStatus] = useState("login");
   const [loading, setLoading] = useState(false);
@@ -52,7 +54,6 @@ const LoginPage = () => {
     setLoading(true);
     APIService.registerUser(signupInfo)
       .then(response => {
-        console.log(`regis ${response}`)
         setError(false);
         setLoading(false);
         setMessage({
@@ -78,7 +79,7 @@ const LoginPage = () => {
       setLoading(true);
       APIService.loginUser(loginInfo)
         .then(response => {
-          console.log(`login ${response}`)
+          setToken(response.token);
           sessionStorage.setItem("token", response.token);
           setError(false);
           setTimeout(() => navigate("/"), 2000);
@@ -161,7 +162,10 @@ const LoginPage = () => {
             </Form.Item>
             <small>
               <span>Don't have an account? </span> 
-              <span className="link" onClick={() => setStatus("signup")}>Signup here</span>
+              <span className="link" onClick={() => {
+                setStatus("signup");
+                setVisible(false);
+              }}>Signup here</span>
             </small>
           </Form>
         ) : (
@@ -216,7 +220,10 @@ const LoginPage = () => {
               </Form.Item>
               <small>
                 <span>Already have an account? </span> 
-                <span className="link" onClick={() => setStatus("login")}>Login here</span>
+                <span className="link" onClick={() => {
+                  setStatus("login");
+                  setVisible(false);
+                }}>Login here</span>
               </small>
             </Form>
           )}

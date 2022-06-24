@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Layout, Typography, Grid, Breadcrumb } from "antd";
+import { useLogin } from "../../contexts/UserContext";
 
 import Navbar from "../../components/navbar/Navbar";
 import SideNavbar from "../../components/navbar/SideNavbar";
@@ -21,17 +22,19 @@ const ForecastPage = () => {
   const [locations, setLocations] = useState([]);
   const [loc, setLoc] = useState([]);
 
+  const { token } = useLogin();
+
   useEffect(() => {
     const locsCache = JSON.parse(localStorage.getItem("locations"));
     if (locsCache) {
       setLocations(locsCache);
     } else {
-      APIService.GetLocations().then((response) => {
+      APIService.GetLocations(token).then((response) => {
         localStorage.setItem("locations", JSON.stringify(response));
         setLocations(response);
       });
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     setLoc(locations.filter((el) => el.id === parseInt(params.id)));
