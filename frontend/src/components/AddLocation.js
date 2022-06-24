@@ -11,7 +11,7 @@ import {
 import { PlusOutlined } from "@ant-design/icons";
 
 import APIService from "../APIService";
-import { useAPI } from "../LocationContext";
+import { useAPI } from "../contexts/LocationContext";
 
 const { Text } = Typography;
 const { Option } = Select;

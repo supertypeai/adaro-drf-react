@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Layout, Typography, Row, Col, Card } from "antd";
-import { useAPI } from "../../LocationContext";
+import { useAPI } from "../../contexts/LocationContext";
 
 import Navbar from "../../components/navbar/Navbar";
 import AddLocation from "../../components/AddLocation";
