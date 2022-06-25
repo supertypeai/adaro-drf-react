@@ -46,19 +46,20 @@ export function UserProvider({ children }) {
   }
 
   useEffect(() => {
-
-    if (loading) {
-      updateToken()
-    }
-
-    let fourMinutes = 1000 * 60 * 4
-
-    let interval = setInterval(() => {
-      if (authTokens) {
+    if (authTokens) {
+      if (loading) {
         updateToken()
       }
-    }, fourMinutes)
-    return () => clearInterval(interval)
+
+      let fourMinutes = 1000 * 60 * 4
+
+      let interval = setInterval(() => {
+        if (authTokens) {
+          updateToken()
+        }
+      }, fourMinutes)
+      return () => clearInterval(interval)
+    }
 
   }, [authTokens, loading])
 
