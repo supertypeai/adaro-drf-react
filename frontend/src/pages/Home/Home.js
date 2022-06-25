@@ -16,15 +16,15 @@ const { Title } = Typography;
 
 const Home = () => {
   const { locations } = useAPI();
-  const { token } = useLogin();
+  const { authTokens } = useLogin();
 
-  const navigate= useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if(!token){
+    if (!authTokens) {
       navigate("/login");
     }
-  }, [token, navigate])
+  }, [authTokens, navigate])
 
   return (
     <Layout>

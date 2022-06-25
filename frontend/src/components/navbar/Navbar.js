@@ -5,16 +5,16 @@ import { useLogin } from "../../contexts/UserContext";
 const { SubMenu } = Menu;
 
 const Navbar = () => {
-  const { setToken } = useLogin();
+  const { logoutUser } = useLogin();
 
-  const handleLogout = (event) => {
-    event.preventDefault();
-  
-    sessionStorage.removeItem("token");
-    setToken(null);
-    window.location.reload();
-    
-  }
+  // const handleLogout = (event) => {
+  //   event.preventDefault();
+
+  //   sessionStorage.removeItem("authTokens");
+  //   setAuthTokens(null);
+  //   window.location.reload();
+
+  // }
 
   return (
     <Menu
@@ -35,7 +35,7 @@ const Navbar = () => {
           <Link to="/">Reset Password</Link>
         </Menu.Item>
         <Menu.Item key="2.2">
-          <span onClick={(event) => handleLogout(event)}>Logout</span>
+          <span onClick={() => logoutUser()}>Logout</span>
         </Menu.Item>
       </SubMenu>
     </Menu>

@@ -29,9 +29,6 @@ def sail_status(row):
     return status
 
 
-@authentication_classes(
-    [TokenAuthentication,]
-)
 @permission_classes(
     [IsAuthenticated,]
 )

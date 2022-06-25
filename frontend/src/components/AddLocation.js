@@ -29,10 +29,10 @@ const AddLocation = () => {
   const [openModal, setOpenModal] = useState(false);
 
   const { locations, setLocations } = useAPI();
-  const { token } = useLogin();
+  const { authTokens } = useLogin();
 
   const handleOk = () => {
-    APIService.AddLocation(newLocation.category, token)
+    APIService.AddLocation(newLocation.category, authTokens.access)
       .then((resp) => setLocations([...locations, resp]))
       .then(setOpenModal(false));
   };
