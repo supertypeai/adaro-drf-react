@@ -9,7 +9,7 @@ export function LocationProvider({ children }) {
   const { authTokens } = useLogin();
 
   useEffect(() => {
-    APIService.GetLocations(authTokens.access).then((response) => {
+    APIService.GetLocations(authTokens?.access).then((response) => {
       setLocations(response);
     });
   }, [authTokens]);
