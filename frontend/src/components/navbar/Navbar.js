@@ -7,15 +7,6 @@ const { SubMenu } = Menu;
 const Navbar = () => {
   const { logoutUser } = useLogin();
 
-  // const handleLogout = (event) => {
-  //   event.preventDefault();
-
-  //   sessionStorage.removeItem("authTokens");
-  //   setAuthTokens(null);
-  //   window.location.reload();
-
-  // }
-
   return (
     <Menu
       theme="dark"

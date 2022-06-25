@@ -26,7 +26,7 @@ const DataPage = () => {
   const [loc, setLoc] = useState([]);
 
   const { authTokens } = useLogin();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     const locsCache = JSON.parse(localStorage.getItem("locations"));
@@ -38,11 +38,7 @@ const DataPage = () => {
         setLocations(response);
       });
     }
-
-    if (!authTokens) {
-      navigate("../../login");
-    }
-  }, [params, authTokens, navigate]);
+  }, [params, authTokens]);
 
   useEffect(() => {
     setLoc(locations.filter((el) => el.id === parseInt(params.id)));

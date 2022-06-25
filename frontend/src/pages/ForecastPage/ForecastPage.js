@@ -23,7 +23,7 @@ const ForecastPage = () => {
   const [loc, setLoc] = useState([]);
 
   const { authTokens } = useLogin();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     const locsCache = JSON.parse(localStorage.getItem("locations"));
@@ -35,11 +35,7 @@ const ForecastPage = () => {
         setLocations(response);
       });
     }
-
-    if (!authTokens) {
-      navigate("../../../login");
-    }
-  }, [authTokens, navigate]);
+  }, [authTokens]);
 
   useEffect(() => {
     setLoc(locations.filter((el) => el.id === parseInt(params.id)));

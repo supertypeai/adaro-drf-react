@@ -51,13 +51,13 @@ export function UserProvider({ children }) {
         updateToken()
       }
 
-      let fourMinutes = 1000 * 60 * 4
+      let fourteenMinutes = 1000 * 60 * 14
 
       let interval = setInterval(() => {
         if (authTokens) {
           updateToken()
         }
-      }, fourMinutes)
+      }, fourteenMinutes)
       return () => clearInterval(interval)
     }
 
