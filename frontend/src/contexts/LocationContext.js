@@ -11,6 +11,7 @@ export function LocationProvider({ children }) {
   useEffect(() => {
     APIService.GetLocations(authTokens?.access).then((response) => {
       setLocations(response);
+      localStorage.setItem("locations", JSON.stringify(response));
     });
   }, [authTokens]);
   return (
