@@ -52,7 +52,6 @@
 #login-form small {
   font-size: 14px;
 }
-
 #login-form .ant-form-item-label > label.ant-form-item-required::before {
   display: none;
 }

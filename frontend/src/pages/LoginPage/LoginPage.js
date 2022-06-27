@@ -97,6 +97,35 @@ const LoginPage = () => {
       })
   };
 
+  const handlePasswordSubmit = (event) => {
+    event.preventDefault();
+    // setLoading(true);
+    // send email
+    setMessage({
+      message: "Email Sent!",
+      description: "Check your email to reset your password."
+    });
+    setVisible(true);
+    setStatus("login");
+    // APIService.loginUser(loginInfo)
+    //   .then(response => {
+    //     setAuthTokens(response);
+    //     // sessionStorage.setItem("token", response.token);
+    //     localStorage.setItem('authTokens', JSON.stringify(response))
+    //     setError(false);
+    //     setTimeout(() => navigate("/"), 2000);
+    //   })
+    //   .catch(error => {
+    //     setLoading(false);
+    //     setMessage({
+    //       message: "Log In Failed!",
+    //       description: "Username or password is invalid."
+    //     });
+    //     setError(true);
+    //     setVisible(true);
+    //   })
+  };
+
   return (
     <div className="login-page">
       {loading ? (
@@ -148,6 +177,7 @@ const LoginPage = () => {
                 <Form.Item
                   name="password"
                   rules={[{ required: true, message: 'Please input your password.' }]}
+                  style={{ marginBottom: "5px"}}
                 >
                   <Input.Password
                     size="large"
@@ -157,6 +187,17 @@ const LoginPage = () => {
                     onChange={handleChange}
                   />
                 </Form.Item>
+                <div style={{textAlign: "end", marginBottom: "10px"}}>
+                  <small
+                    className="link"
+                    onClick={() => {
+                      setStatus("forgot-password");
+                      setVisible(false);
+                    }}
+                  >
+                    Forgot Password?
+                  </small>
+                </div>
                 <Form.Item>
                   <Button type="primary" htmlType="submit" className="login-form-button">
                     LOGIN
@@ -170,7 +211,7 @@ const LoginPage = () => {
                   }}>Signup here</span>
                 </small>
               </Form>
-            ) : (
+            ) : status==="signup" ? (
               <Form
                 name="login-form"
                 initialValues={{ remember: true }}
@@ -226,6 +267,38 @@ const LoginPage = () => {
                     setStatus("login");
                     setVisible(false);
                   }}>Login here</span>
+                </small>
+              </Form>
+            ) : (
+              <Form
+                name="login-form"
+                initialValues={{ remember: true }}
+                onSubmitCapture={handlePasswordSubmit}
+              >
+                <p className="form-title">Forgot Password</p>
+                <p>Enter your email address below, and we'll email instructions on setting a new password.</p>
+                <Form.Item
+                  name="email"
+                  rules={[{ required: true, message: 'Please input your email.' }]}
+                >
+                  <Input
+                    size="large"
+                    placeholder="Email address"
+                    prefix={<MailOutlined />}
+                    name="email"
+                    onChange={handleChange}
+                  />
+                </Form.Item>
+
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" className="login-form-button">
+                    SUBMIT
+                  </Button>
+                </Form.Item>
+                <small>
+                  <span className="link" onClick={() => {
+                    setStatus("login");
+                  }}>Back to Login Page</span>
                 </small>
               </Form>
             )}
