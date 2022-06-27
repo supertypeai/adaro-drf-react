@@ -9,6 +9,7 @@ const SideNavbar = () => {
   const { SubMenu } = Menu;
 
   return (
+    // ADD COLLAPSE BUTTON (BURGER) FOR RESPONSIVENESS LAH SIAAAAA!!!
     <Menu
       mode="inline"
       selectedKeys={[activeKey]}
@@ -17,18 +18,19 @@ const SideNavbar = () => {
         borderRight: 0,
       }}
     >
-      {Array.isArray(locations) && locations.map((location) => {
-        return (
-          <SubMenu key={location.id} title={location.title}>
-            <Menu.Item key={`${location.id}.1`}>
-              <Link to={`/locs/${location.id}`}>Data</Link>
-            </Menu.Item>
-            <Menu.Item key={`${location.id}.2`}>
-              <Link to={`/locs/${location.id}/forecast/`}>Forecast</Link>
-            </Menu.Item>
-          </SubMenu>
-        );
-      })}
+      {Array.isArray(locations) &&
+        locations.map((location) => {
+          return (
+            <SubMenu key={location.id} title={location.title}>
+              <Menu.Item key={`${location.id}.1`}>
+                <Link to={`/locs/${location.id}`}>Data</Link>
+              </Menu.Item>
+              <Menu.Item key={`${location.id}.2`}>
+                <Link to={`/locs/${location.id}/forecast/`}>Forecast</Link>
+              </Menu.Item>
+            </SubMenu>
+          );
+        })}
     </Menu>
   );
 };
