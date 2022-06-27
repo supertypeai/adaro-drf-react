@@ -38,3 +38,4 @@ backend/api/migrations/__pycache__/
 backend/backend/__pycache__/
 
 *.pyc
+credentials/
