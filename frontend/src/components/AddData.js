@@ -10,6 +10,7 @@ import {
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
+import { useLogin } from "../contexts/UserContext";
 import moment from "moment";
 
 import APIService from "../APIService";
@@ -37,15 +38,16 @@ const AddData = ({
   });
 
   const location = useLocation();
+  const { authTokens } = useLogin();
 
-  useEffect(() => {
-    setNewData({ ...newData, location: locId });
-  }, [location, newData, locId]);
+  // useEffect(() => {
+  //   setNewData({ ...newData, location: locId });
+  // }, [location, newData, locId]);
 
   const [openModal, setOpenModal] = useState(false);
 
   const handleOk = () => {
-    APIService.AddData(newData)
+    APIService.AddData(locId, newData, authTokens.access)
       .then((response) => {
         setData([response, ...data]);
         setFilteredData([response, ...data]);

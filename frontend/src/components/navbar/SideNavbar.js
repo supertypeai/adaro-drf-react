@@ -1,7 +1,7 @@
 import React from "react";
 import { Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
-import { useAPI } from "../../LocationContext";
+import { useAPI } from "../../contexts/LocationContext";
 
 const SideNavbar = () => {
   const { locations } = useAPI();
@@ -17,7 +17,7 @@ const SideNavbar = () => {
         borderRight: 0,
       }}
     >
-      {locations.map((location) => {
+      {Array.isArray(locations) && locations.map((location) => {
         return (
           <SubMenu key={location.id} title={location.title}>
             <Menu.Item key={`${location.id}.1`}>

@@ -1,0 +1,12 @@
+.ant-card {
+  border-color: transparent;
+  transition: border-color 0.3s ease;
+}
+
+.ant-card:hover {
+  border-color: #537ec5;
+}
+
+.ant-btn-primary {
+  background-color: rgb(59 130 246);
+}

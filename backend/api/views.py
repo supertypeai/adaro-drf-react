@@ -1,18 +1,32 @@
-from rest_framework import viewsets
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+import re
+from urllib import response
+from rest_framework import viewsets, status
+from rest_framework import generics
+from rest_framework.decorators import (
+    api_view,
+    permission_classes,
+)
 from rest_framework.response import Response
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth.models import User
-from google.cloud import bigquery
-from pandas import DataFrame
-import json
+from django.shortcuts import HttpResponse, get_object_or_404
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
 
 from .models import Location, LocationData
-from .serializers import LocationSerializer, LocationDataSerializer, UserSerializer
+from .serializers import (
+    LocationSerializer,
+    LocationDataSerializer,
+    UserSerializer,
+    MyTokenObtainPairSerializer,
+    ResetPasswordEmailRequestSerializer,
+    SetNewPasswordSerializer,
+)
 
 
 # Create your views here.
@@ -31,111 +45,186 @@ from .serializers import LocationSerializer, LocationDataSerializer, UserSeriali
 
 #     return Response(api_urls)
 
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+
 class LocationListView(viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
     permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 
-@api_view(['GET'])
-@authentication_classes([TokenAuthentication, ])
-@permission_classes([IsAuthenticated, ])
-def locationData(request, pk):
-    data = LocationData.objects.filter(location=pk)
-    serializer = LocationDataSerializer(data, many=True)
+@api_view(["GET", "POST"])
+@permission_classes(
+    [IsAuthenticated, ]
+)
+def locationData(request, locId):
+    if request.method == "GET":
+        locationData = LocationData.objects.filter(location=locId)
+        serializer = LocationDataSerializer(locationData, many=True)
+        return Response(serializer.data)
 
-    return Response(serializer.data)
-
-
-# GET BIGQUERY FORECAST DATA
-def sail_status(row):
-    if (row['predict'] >= 19.51) & (row['predict'] <= 26.5):
-        status = ['Maximum']
-    elif (row['predict'] >= 18.61) & (row['predict'] <= 19.5):
-        status = ['Reduced']
-    elif (row['predict'] >= 17.51) & (row['predict'] <= 18.6):
-        status = ['Warning']
-    else:
-        status = ['Not Sailable']
-    return status
+    elif request.method == "POST":
+        newData = request.data
+        serializer = LocationDataSerializer(data=newData)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
-def getForecastData(request):
-    client = bigquery.Client()
+@api_view(["GET", "PUT", "DELETE"])
+@permission_classes(
+    [IsAuthenticated, ]
+)
+def singleLocationData(request, pk):
+    try:
+        locData = LocationData.objects.get(pk=pk)
+    except LocationData.DoesNotExist:
+        return HttpResponse(status=404)
 
-    if request.method == 'POST':
-        loc_requested = json.loads(request.body)
-        if loc_requested == "muara_tuhup":
+    if request.method == "GET":
+        serializer = LocationDataSerializer(locData)
+        return Response(serializer.data)
 
-            # Weekly Forecast Data
-            mt_forecast_dataset = "adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test"
-            mt_one_week_forecast = [
-                table.table_id for table in client.list_tables(mt_forecast_dataset)
-            ][-7:]
+    elif request.method == "PUT":
+        serializer = LocationDataSerializer(locData, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            mt_forecast_list = []
+    elif request.method == "DELETE":
+        locData.delete()
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
-            for day in mt_one_week_forecast:
-                query_string = f"""
-                    SELECT *
-                    FROM `adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test.{day}`
-                """
 
-                forecast_query_result = (
-                    client.query(query_string)
-                    .result()
-                )
+# class UserView(viewsets.ModelViewSet):
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
 
-                records = [dict(row) for row in forecast_query_result]
-                mt_forecast_list.extend(records)
 
-                mt_forecast_list = sorted(mt_forecast_list, key=lambda x: (
-                    x["date"], (float(x["hour"]) - 6) % 24))
+class UserView(viewsets.ViewSet):
+    def list(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
 
-                mt_forecast_df = DataFrame(mt_forecast_list)
+    def create(self, request):
+        raw_password = User.objects.make_random_password()
+        print(raw_password)
+        request.data["password"] = raw_password
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            send_mail(
+                "Account Successfully Created",
+                f"""
+You have created a new account for the ADARO Web App - Barito River
+Your login details are as follows:
 
-                # Turn dataframe to long format
-                mt_forecast_df_melted = mt_forecast_df.melt(
-                    id_vars=['date', 'hour'])
-                mt_forecast_json = mt_forecast_df_melted.to_json(
-                    orient='records')
+Username: {request.data['username']}
+Password: {raw_password}
 
-                mt_forecast_wide = mt_forecast_df[['date', 'hour', 'predict']]
+Note: The password above is randomly generated. Do change it to your personal password on the homepage where you can find a "Change Password" option.
+*Email is auto-generated. Please do not reply.
+                """,
+                "adaro@supertype.ai",
+                [request.data["email"]],
+            )
+            print("mail sent")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                mt_forecast_wide['Status'] = mt_forecast_wide.apply(
-                    lambda row: sail_status(row), axis=1)
+    def retrieve(self, request, pk=None):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
 
-                mt_forecast_wide_json = mt_forecast_wide.to_json(
-                    orient="records")
+    # def update(self, request, pk=None):
+    #     queryset = User.objects.all()
+    #     user = get_object_or_404(queryset, pk=pk)
+    #     serializer = UserSerializer(user, data=request.data, context={"id": pk})
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            # Monthly Forecast Data
-            table_id = "adaro-data-warehouse.muara_tuhup_loadabledays_forecast.forecast_loadabledays"
-            query_string = f"""
-                SELECT *
-                FROM `{table_id}`
-            """
-            query_job = (
-                client.query(query_string)
-                .result()
+    def destroy(self, request, pk=None):
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RequestPasswordResetEmail(generics.GenericAPIView):
+    serializer_class = ResetPasswordEmailRequestSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        email = request.data['email']
+
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+            print("this is the encoding: ", uidb64)
+            token = PasswordResetTokenGenerator().make_token(user)
+            print("token: ", token)
+            current_site = get_current_site(
+                request=request).domain
+            relative_link = reverse(
+                'password-reset-confirm', kwargs={'uidb64': uidb64, "token": token})
+
+            send_mail(
+                "Password Reset Request",
+                f"""
+Hello, use the link provided below to reset your password!
+
+http://{current_site}{relative_link}
+
+Note: Do not share the link above with anyone!
+                """,
+                "adaro@supertype.ai",
+                [email],
             )
 
-            query_result = DataFrame([dict(row) for row in query_job]).sort_values(
-                ['year', 'month'], ascending=True)
-            mt_monthly_forecast = query_result.tail(
-                3).to_json(orient='records')
-
-            return JsonResponse({"response": "success", "data": mt_forecast_json, "data_wide": mt_forecast_wide_json, "monthly_data": mt_monthly_forecast})
-
-        else:  # Insert other locations' forecast here!
-            return JsonResponse({"response": "empty"})
+        return Response({"success": "We have sent you a link to reset your password."}, status=status.HTTP_200_OK)
 
 
-class UserView(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class PasswordTokenCheckAPI(generics.GenericAPIView):
+    def get(self, request, uidb64, token):
+        try:
+            id = smart_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=id)
+
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response({'error': "Token is not valid, please request a new one."}, status=status.HTTP_401_UNAUTHORIZED)
+
+            return Response({
+                'success': True,
+                'message': 'Credentials Valid',
+                "uidb64": uidb64,
+                "token": token
+            }, status=status.HTTP_200_OK)
+
+        except DjangoUnicodeDecodeError as identifier:
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response({'error': 'Token is not valid, please request a new one.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class SetNewPasswordAPIView(generics.GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+
+    def patch(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(
+            {'success': True, 'message': "Password has been reset successfully"},
+            status=status.HTTP_200_OK
+        )

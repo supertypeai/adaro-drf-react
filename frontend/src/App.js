@@ -1,13 +1,16 @@
 import "./App.less";
 
 import MainRouter from "./routers/MainRouter";
-import { LocationProvider } from "./LocationContext";
+import { LocationProvider } from "./contexts/LocationContext";
+import { UserProvider } from "./contexts/UserContext";
 
 const App = () => {
   return (
-    <LocationProvider>
-      <MainRouter />
-    </LocationProvider>
+    <UserProvider>
+      <LocationProvider>
+        <MainRouter />
+      </LocationProvider>
+    </UserProvider>
   );
 };
 

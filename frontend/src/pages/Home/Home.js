@@ -1,12 +1,13 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Layout, Typography, Row, Col, Card } from "antd";
-import { useAPI } from "../LocationContext";
+import { useAPI } from "../../contexts/LocationContext";
+import { useLogin } from "../../contexts/UserContext";
 
-import Navbar from "../components/navbar/Navbar";
-import AddLocation from "../components/AddLocation";
+import Navbar from "../../components/navbar/Navbar";
+import AddLocation from "../../components/AddLocation";
 
-import adaroLogo from "../images/adaro-logo.png";
+import adaroLogo from "../../images/adaro-logo.png";
 
 import "./Home.css";
 
@@ -15,6 +16,14 @@ const { Title } = Typography;
 
 const Home = () => {
   const { locations } = useAPI();
+  // const { authTokens } = useLogin();
+  // const navigate = useNavigate();
+
+  // useEffect(() => {
+  //   if (!authTokens) {
+  //     navigate("/login");
+  //   }
+  // }, [authTokens, navigate])
 
   return (
     <Layout>
@@ -27,12 +36,12 @@ const Home = () => {
           <Title style={{ textAlign: "center", paddingTop: "0.8em" }}>
             Locations
           </Title>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          {/* <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <AddLocation />
-          </div>
+          </div> */}
 
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            {locations.map((location) => {
+            {Array.isArray(locations) && locations.map((location) => {
               return (
                 <Col xs={24} md={12} lg={8} key={location.id}>
                   <Link to={`/locs/${location.id}`}>

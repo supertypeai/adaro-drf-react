@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Skeleton, Space, Grid, DatePicker, Button } from "antd";
+import { useLogin } from "../../contexts/UserContext";
 
-import DataTable from "./DataTable";
 import DataGraph from "./DataGraph";
 import AddData from "../AddData";
 import APIService from "../../APIService";
 
 import "./DataComponent.css";
+import EditableTable from "./EditableTable";
 
 const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
   const [data, setData] = useState([]);
@@ -16,17 +17,18 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
 
   const { useBreakpoint } = Grid;
   const { md } = useBreakpoint();
+  const { authTokens } = useLogin();
 
   useEffect(() => {
     setLoading(true);
-    APIService.GetData(locId)
+    APIService.GetData(locId, authTokens.access)
       .then((response) => {
         setData(response);
         setFilteredData(response);
         setLoading(false);
       })
       .catch((error) => console.log(error));
-  }, [locId, loc]);
+  }, [locId, loc, authTokens]);
 
   const handleDate = (_, dateString) => {
     setFilterDate(dateString);
@@ -38,6 +40,8 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
 
   const handleReset = () => {
     setFilteredData(data);
+    console.log(data);
+    console.log(filteredData);
   };
 
   return (
@@ -47,7 +51,13 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
       ) : (
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           {/* Hides graph when the screen is too small */}
-          {md ? <DataGraph data={filteredData} loc={loc} /> : null}
+          {md ? (
+            <DataGraph
+              data={filteredData}
+              loc={loc}
+              locCategory={locCategory}
+            />
+          ) : null}
 
           <div className="button-wrapper">
             <div className="left">
@@ -79,7 +89,15 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
             </div>
           </div>
 
-          <DataTable data={filteredData} loc={loc} locCategory={locCategory} />
+          {/* <DataTable data={filteredData} setData={setData} loc={loc} locCategory={locCategory} /> */}
+          <EditableTable
+            filteredData={filteredData}
+            setFilteredData={setFilteredData}
+            data={data}
+            setData={setData}
+            loc={loc}
+            locCategory={locCategory}
+          ></EditableTable>
         </Space>
       )}
     </>

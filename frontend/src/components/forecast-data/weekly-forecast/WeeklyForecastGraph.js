@@ -5,7 +5,7 @@ import { Grid } from "antd";
 
 const { useBreakpoint } = Grid;
 
-const WeeklyForecastGraph = ({ weeklyData }) => {
+const WeeklyForecastGraph = ({ loc, weeklyData }) => {
   const { md } = useBreakpoint();
   const maxTicksLimitDesktop = md ? 7 : 4;
 
@@ -66,13 +66,24 @@ const WeeklyForecastGraph = ({ weeklyData }) => {
   }, []);
 
   const data = {
-    labels: predictData.map((row) => {
-      const year = row.DateHour.split("-")[0];
-      const month = row.DateHour.split("-")[1];
-      const day = row.DateHour.split("-")[2];
-      const hour = row.DateHour.split("-")[3];
-      return year + "-" + month + "-" + day + ", " + hour + "-Hour";
-    }),
+    labels: (loc === 'muara_tuhup') ? (
+      predictData.map((row) => {
+        const year = row.DateHour.split("-")[0];
+        const month = row.DateHour.split("-")[1];
+        const day = row.DateHour.split("-")[2];
+        const hour = row.DateHour.split("-")[3];
+        return year + "-" + month + "-" + day + ", " + hour + "-Hour";
+      })
+    ) : (
+      predictData.map((row) => {
+        const year = row.DateHour.split("-")[0];
+        const month = row.DateHour.split("-")[1];
+        const day = row.DateHour.split("-")[2];
+        return year + "-" + month + "-" + day;
+      })
+    )
+
+    ,
     datasets: [
       {
         label: "Lower_80%CI",

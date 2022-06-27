@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Skeleton, Typography, Space, Divider } from "antd";
+import { useLogin } from "../../contexts/UserContext";
 
 import APIService from "../../APIService";
 import WeeklyForecastGraph from "./weekly-forecast/WeeklyForecastGraph";
@@ -17,23 +18,26 @@ const ForecastComponent = ({ loc }) => {
   const [tableWeeklyData, setTableWeeklyData] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { authTokens } = useLogin();
 
   useEffect(() => {
     setIsLoading(true);
     if (loc !== "loading") {
-      APIService.getForecastData(loc)
+      APIService.getForecastData(loc, authTokens.access)
         .then((resp) => {
           if (resp.response === "success") {
             setWeeklyData(JSON.parse(resp.data));
             setTableWeeklyData(JSON.parse(resp.data_wide));
-            setMonthlyData(JSON.parse(resp.monthly_data));
+            if (loc === 'muara_tuhup') {
+              setMonthlyData(JSON.parse(resp.monthly_data));
+            }
           } else if (resp.response === "empty") {
             setWeeklyData([]);
           }
         })
         .then(() => setIsLoading(false));
     }
-  }, [loc]);
+  }, [loc, authTokens]);
 
   return (
     <>
@@ -53,7 +57,7 @@ const ForecastComponent = ({ loc }) => {
             }}
           >
             <Title level={2}>Weekly Forecast</Title>
-            <WeeklyForecastGraph weeklyData={weeklyData} />
+            <WeeklyForecastGraph loc={loc} weeklyData={weeklyData} />
             <br />
             <WeeklyTableModal tableWeeklyData={tableWeeklyData} />
           </div>
