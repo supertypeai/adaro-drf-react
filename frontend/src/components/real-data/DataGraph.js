@@ -1,13 +1,23 @@
 import React from "react";
 import { Line } from "@ant-design/charts";
 
-const DataGraph = ({ data, loc }) => {
+const DataGraph = ({ data, loc, locCategory }) => {
   // Ascending order of date
   const dataY = [...data].sort(function (a, b) {
     return a.date.localeCompare(b.date) || parseInt(a.hour) - parseInt(b.hour);
   });
-  let minY = Math.min.apply(Math, dataY.map(function (val) { return val.measurement; }));
-  let maxY = Math.max.apply(Math, dataY.map(function (val) { return val.measurement; }));
+  let minY = Math.min.apply(
+    Math,
+    dataY.map(function (val) {
+      return val.measurement;
+    })
+  );
+  let maxY = Math.max.apply(
+    Math,
+    dataY.map(function (val) {
+      return val.measurement;
+    })
+  );
 
   var config = {
     data: dataY,
@@ -29,8 +39,7 @@ const DataGraph = ({ data, loc }) => {
             ", Hour-" +
             d.split("-")[3];
 
-          const format =
-            loc === "muara_teweh" || loc === "tarusan" ? dateOnly : withHour;
+          const format = locCategory === "daily" ? dateOnly : withHour;
 
           return format;
         },
@@ -67,7 +76,7 @@ const DataGraph = ({ data, loc }) => {
       },
     ],
     yAxis: {
-      minLimit: (minY - 3) < 0 ? 0 : Math.round(minY - 2),
+      minLimit: minY - 3 < 0 ? 0 : Math.round(minY - 2),
       maxLimit: Math.round(maxY + 3),
       // tickCount: 11,
       tickInterval: 2,
