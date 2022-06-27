@@ -12,7 +12,6 @@ import adaroLogo from "../../images/adaro-logo.png";
 
 import "./DataPage.css";
 
-
 const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
 const { useBreakpoint } = Grid;

@@ -6,62 +6,69 @@ const UserContext = createContext();
 
 export function UserProvider({ children }) {
   // const [token, setToken] = useState(null);
-  const [authTokens, setAuthTokens] = useState(() => localStorage.getItem('authTokens') ? JSON.parse(localStorage.getItem('authTokens')) : null)
-  const [user, setUser] = useState(() => localStorage.getItem('authTokens') ? jwt_decode(localStorage.getItem('authTokens')) : null)
-  const [loading, setLoading] = useState(true)
+  const [authTokens, setAuthTokens] = useState(() =>
+    localStorage.getItem("authTokens")
+      ? JSON.parse(localStorage.getItem("authTokens"))
+      : null
+  );
+  const [user, setUser] = useState(() =>
+    localStorage.getItem("authTokens")
+      ? jwt_decode(localStorage.getItem("authTokens"))
+      : null
+  );
+  const [loading, setLoading] = useState(true);
 
   // const navigate = useNavigate();
   // useEffect(() => {
   //   setAuthToken(sessionStorage.getItem("token"));
   // }, []);
   const logoutUser = () => {
-    setAuthTokens(null)
-    setUser(null)
-    localStorage.removeItem('authTokens')
+    setAuthTokens(null);
+    setUser(null);
+    window.localStorage.clear();
+    // localStorage.removeItem('authTokens')
     // navigate('/login')
-  }
+  };
   const updateToken = async () => {
-
-    const response = await fetch('http://127.0.0.1:8000/api/token/refresh/', {
-      method: 'POST',
+    const response = await fetch("http://127.0.0.1:8000/api/token/refresh/", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ 'refresh': authTokens?.refresh })
-    })
+      body: JSON.stringify({ refresh: authTokens?.refresh }),
+    });
 
-    const data = await response.json()
+    const data = await response.json();
 
     if (response.status === 200) {
-      setAuthTokens(data)
-      setUser(jwt_decode(data.access))
-      localStorage.setItem('authTokens', JSON.stringify(data))
+      setAuthTokens(data);
+      setUser(jwt_decode(data.access));
+      localStorage.setItem("authTokens", JSON.stringify(data));
     } else {
-      logoutUser()
+      logoutUser();
     }
 
     if (loading) {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (authTokens) {
       if (loading) {
-        updateToken()
+        updateToken();
       }
 
-      let fourteenMinutes = 1000 * 60 * 14
+      let fourteenMinutes = 1000 * 60 * 14;
 
       let interval = setInterval(() => {
         if (authTokens) {
-          updateToken()
+          updateToken();
         }
-      }, fourteenMinutes)
-      return () => clearInterval(interval)
+      }, fourteenMinutes);
+      return () => clearInterval(interval);
     }
-
-  }, [authTokens, loading])
+  }, [authTokens, loading]);
 
   return (
     <UserContext.Provider
@@ -69,7 +76,7 @@ export function UserProvider({ children }) {
         authTokens,
         setAuthTokens,
         user,
-        logoutUser
+        logoutUser,
       }}
     >
       {children}

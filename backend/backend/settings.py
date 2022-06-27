@@ -126,9 +126,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", },
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator", },
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator", },
 ]
 
 
@@ -160,11 +160,11 @@ CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
 
 
 # GOOGLE BIGQUERY CREDENTIAL
-# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/Users/owenngimli/Documents/Programming/02-Web Development/01-Django/01 - Adaro River/credentials/adaro-data-warehouse-00f03ed46103.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/Users/owenngimli/Documents/Programming/02-Web Development/01-Django/01 - Adaro River/credentials/adaro-data-warehouse-00f03ed46103.json'
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "D:/Supertype/2021-2022/adaro-drf-react/backend/adaro-data-warehouse-7005b9f0c27e.json"
-os.environ[
-    "GOOGLE_APPLICATION_CREDENTIALS"
-] = "D:/Work/Supertype/adaro-drf-react/backend/adaro-data-warehouse-97f4ef317884.json"
+# os.environ[
+#     "GOOGLE_APPLICATION_CREDENTIALS"
+# ] = "D:/Work/Supertype/adaro-drf-react/backend/adaro-data-warehouse-97f4ef317884.json"
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (

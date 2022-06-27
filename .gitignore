@@ -37,3 +37,4 @@ backend/api/management/commands/__pycache__/load_data.cpython-38.pyc
 backend/api/migrations/__pycache__/
 backend/backend/__pycache__/
 
+*.pyc

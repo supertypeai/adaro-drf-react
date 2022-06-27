@@ -9,26 +9,40 @@ import ProtectedRoute from "./ProtectedRoute";
 import { useLogin } from "../contexts/UserContext";
 
 const MainRouter = () => {
-  const { user } = useLogin()
+  const { authTokens } = useLogin();
+
+  let token = authTokens ? authTokens : localStorage.getItem("authTokens");
 
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} exact />
-        <Route path="/" element={
-          <ProtectedRoute user={user}>
-            <Home />
-          </ProtectedRoute>
-        } exact />
-        <Route path={`/locs/:id`} element={
-          <ProtectedRoute user={user}>
-            <DataPage />
-          </ProtectedRoute>
-        } exact />
-        <Route path={`/locs/:id/forecast`} element={
-          <ProtectedRoute user={user}>
-            <ForecastPage />
-          </ProtectedRoute>} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute user={token}>
+              <Home />
+            </ProtectedRoute>
+          }
+          exact
+        />
+        <Route
+          path={`/locs/:id`}
+          element={
+            <ProtectedRoute user={token}>
+              <DataPage />
+            </ProtectedRoute>
+          }
+          exact
+        />
+        <Route
+          path={`/locs/:id/forecast`}
+          element={
+            <ProtectedRoute user={token}>
+              <ForecastPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );

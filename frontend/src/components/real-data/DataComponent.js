@@ -40,6 +40,8 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
 
   const handleReset = () => {
     setFilteredData(data);
+    console.log(data);
+    console.log(filteredData);
   };
 
   return (
@@ -49,7 +51,13 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
       ) : (
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           {/* Hides graph when the screen is too small */}
-          {md ? <DataGraph data={filteredData} loc={loc} /> : null}
+          {md ? (
+            <DataGraph
+              data={filteredData}
+              loc={loc}
+              locCategory={locCategory}
+            />
+          ) : null}
 
           <div className="button-wrapper">
             <div className="left">
@@ -82,7 +90,14 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
           </div>
 
           {/* <DataTable data={filteredData} setData={setData} loc={loc} locCategory={locCategory} /> */}
-          <EditableTable data={filteredData} setData={setData} loc={loc} locCategory={locCategory}></EditableTable>
+          <EditableTable
+            filteredData={filteredData}
+            setFilteredData={setFilteredData}
+            data={data}
+            setData={setData}
+            loc={loc}
+            locCategory={locCategory}
+          ></EditableTable>
         </Space>
       )}
     </>
