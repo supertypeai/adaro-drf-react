@@ -36,9 +36,9 @@ const Home = () => {
           <Title style={{ textAlign: "center", paddingTop: "0.8em" }}>
             Locations
           </Title>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          {/* <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <AddLocation />
-          </div>
+          </div> */}
 
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             {Array.isArray(locations) && locations.map((location) => {

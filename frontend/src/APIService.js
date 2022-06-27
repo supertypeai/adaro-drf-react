@@ -13,7 +13,7 @@ export default class APIService {
   }
 
   static AddLocation(body, token) {
-    return fetch("http://127.0.0.1:8000/api/locs/add-location/", {
+    return fetch("http://127.0.0.1:8000/api/locs/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
