@@ -32,7 +32,7 @@ const AddLocation = () => {
   const { authTokens } = useLogin();
 
   const handleOk = () => {
-    APIService.AddLocation(newLocation.category, authTokens.access)
+    APIService.AddLocation(newLocation, authTokens.access)
       .then((resp) => setLocations([...locations, resp]))
       .then(setOpenModal(false));
   };
