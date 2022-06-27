@@ -1,5 +1,4 @@
 import React, { useContext, useState, useEffect, createContext } from "react";
-import { useNavigate } from "react-router-dom";
 import jwt_decode from "jwt-decode";
 
 const UserContext = createContext();
@@ -18,16 +17,10 @@ export function UserProvider({ children }) {
   );
   const [loading, setLoading] = useState(true);
 
-  // const navigate = useNavigate();
-  // useEffect(() => {
-  //   setAuthToken(sessionStorage.getItem("token"));
-  // }, []);
   const logoutUser = () => {
     setAuthTokens(null);
     setUser(null);
     window.localStorage.clear();
-    // localStorage.removeItem('authTokens')
-    // navigate('/login')
   };
   const updateToken = async () => {
     const response = await fetch("http://127.0.0.1:8000/api/token/refresh/", {
