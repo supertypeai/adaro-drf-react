@@ -1,4 +1,4 @@
-const PATH = "https://20220629t021601-dot-adaro-data-warehouse.et.r.appspot.com";
+const PATH = "https://20220629t032821-dot-adaro-data-warehouse.et.r.appspot.com";
 
 export default class APIService {
   static GetLocations(token) {
