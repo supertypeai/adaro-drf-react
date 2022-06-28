@@ -1,5 +1,5 @@
 import React from "react";
-// import { Chart as ChartJS } from "chart.js/auto"; // This is needed to prevent the "category is not a registered scale" error
+import { Chart as ChartJS } from "chart.js/auto"; // This is needed to prevent the "category is not a registered scale" error
 import { Line } from "react-chartjs-2";
 import { Grid } from "antd";
 
@@ -7,6 +7,13 @@ const { useBreakpoint } = Grid;
 
 const WeeklyForecastGraph = ({ loc, weeklyData }) => {
   const { md } = useBreakpoint();
+
+  if (loc === "WILL NEVER REACH THIS RETURN") {
+    return (
+      <ChartJS></ChartJS>
+    )
+  }
+
   const maxTicksLimitDesktop = md ? 7 : 4;
 
   const weeklyForecast = weeklyData.map((x) => {

@@ -183,9 +183,10 @@ STATIC_ROOT = "static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOWED_ORIGINS = ["https://adaro-data-warehouse.netlify.app"]
+CORS_ALLOW_ALL_ORIGIN = True
+# CORS_ALLOWED_ORIGINS = ["https://adaro-data-warehouse.netlify.app"]
 
-CSRF_TRUSTED_ORIGINS = ["https://adaro-data-warehouse.netlify.app"]
+# CSRF_TRUSTED_ORIGINS = ["https://adaro-data-warehouse.netlify.app"]
 
 
 # GOOGLE BIGQUERY CREDENTIAL

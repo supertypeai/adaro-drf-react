@@ -3,6 +3,8 @@ import jwt_decode from "jwt-decode";
 
 const UserContext = createContext();
 
+const PATH = "https://20220629t032821-dot-adaro-data-warehouse.et.r.appspot.com";
+
 export function UserProvider({ children }) {
   // const [token, setToken] = useState(null);
   const [authTokens, setAuthTokens] = useState(() =>
@@ -25,7 +27,7 @@ export function UserProvider({ children }) {
 
   useEffect(() => {
     const updateToken = async () => {
-      const response = await fetch("http://127.0.0.1:8000/api/token/refresh/", {
+      const response = await fetch(`${PATH}/api/token/refresh/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
