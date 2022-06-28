@@ -3,7 +3,7 @@ import jwt_decode from "jwt-decode";
 
 const UserContext = createContext();
 
-const PATH = "https://20220629t032821-dot-adaro-data-warehouse.et.r.appspot.com";
+const PATH = "https://20220629t034508-dot-adaro-data-warehouse.et.r.appspot.com";
 
 export function UserProvider({ children }) {
   // const [token, setToken] = useState(null);
