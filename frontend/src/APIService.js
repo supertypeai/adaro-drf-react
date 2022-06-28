@@ -1,15 +1,13 @@
 export default class APIService {
-
   static GetLocations(token) {
     return fetch("http://localhost:8000/api/locs/", {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
-    })
-      .then((resp) => resp.json());
+    }).then((resp) => resp.json());
   }
 
   static AddLocation(body, token) {
@@ -17,7 +15,7 @@ export default class APIService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
@@ -29,7 +27,7 @@ export default class APIService {
     return fetch(`http://127.0.0.1:8000/api/locs/data/${locId}`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
@@ -58,7 +56,7 @@ export default class APIService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
@@ -71,7 +69,7 @@ export default class APIService {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
@@ -84,11 +82,11 @@ export default class APIService {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
-    })
+    });
   }
 
   static getForecastData(body, token) {
@@ -96,7 +94,7 @@ export default class APIService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
@@ -108,32 +106,60 @@ export default class APIService {
     return fetch("http://127.0.0.1:8000/api/users/", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    })
-      .then((response) => {
-        if (response.status !== 201) {
-          throw response;
-        }
-        return response.json();
-      })
+    }).then((response) => {
+      if (response.status !== 201) {
+        throw response;
+      }
+      return response.json();
+    });
   }
 
   static loginUser(body) {
     return fetch("http://127.0.0.1:8000/api/token/", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    })
-      .then((response) => {
-        console.log(response)
-        if (response.status !== 200) {
-          throw response;
-        }
-        return response.json();
-      })
+    }).then((response) => {
+      console.log(response);
+      if (response.status !== 200) {
+        throw response;
+      }
+      return response.json();
+    });
+  }
+
+  static RequestPasswordEmail(body) {
+    return fetch("http://127.0.0.1:8000/api/request-reset-email/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }).then((response) => {
+      if (response.status !== 200) {
+        throw response;
+      }
+      return response.json();
+    });
+  }
+
+  static ResetPassword(body) {
+    return fetch("http://127.0.0.1:8000/api/password-reset-complete/", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }).then((response) => {
+      if (response.status !== 200) {
+        throw response;
+      }
+      return response.json();
+    });
   }
 }

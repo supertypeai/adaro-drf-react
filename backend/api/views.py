@@ -1,5 +1,3 @@
-import re
-from urllib import response
 from rest_framework import viewsets, status
 from rest_framework import generics
 from rest_framework.decorators import (
@@ -15,8 +13,6 @@ from django.core.mail import send_mail
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
 
 from .models import Location, LocationData
 from .serializers import (
@@ -175,17 +171,14 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
             print("this is the encoding: ", uidb64)
             token = PasswordResetTokenGenerator().make_token(user)
             print("token: ", token)
-            current_site = get_current_site(
-                request=request).domain
-            relative_link = reverse(
-                'password-reset-confirm', kwargs={'uidb64': uidb64, "token": token})
 
             send_mail(
                 "Password Reset Request",
                 f"""
-Hello, use the link provided below to reset your password!
+Hello, use the credentials provided below to set your new password!
 
-http://{current_site}{relative_link}
+Your User ID: {uidb64}
+Your Token: {token}
 
 Note: Do not share the link above with anyone!
                 """,
