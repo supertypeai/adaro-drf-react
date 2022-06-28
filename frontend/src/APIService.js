@@ -1,6 +1,8 @@
+const PATH = "https://20220629t021601-dot-adaro-data-warehouse.et.r.appspot.com";
+
 export default class APIService {
   static GetLocations(token) {
-    return fetch("http://localhost:8000/api/locs/", {
+    return fetch(`${PATH}/api/locs/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -11,7 +13,7 @@ export default class APIService {
   }
 
   static AddLocation(body, token) {
-    return fetch("http://127.0.0.1:8000/api/locs/", {
+    return fetch(`${PATH}/api/locs/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -24,7 +26,7 @@ export default class APIService {
   }
 
   static GetData(locId, token) {
-    return fetch(`http://127.0.0.1:8000/api/locs/data/${locId}`, {
+    return fetch(`${PATH}/api/locs/data/${locId}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -52,7 +54,7 @@ export default class APIService {
   }
 
   static AddData(locId, body, token) {
-    return fetch(`http://127.0.0.1:8000/api/locs/data/${locId}/`, {
+    return fetch(`${PATH}/api/locs/data/${locId}/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,7 +67,7 @@ export default class APIService {
   }
 
   static EditData(pk, body, token) {
-    return fetch(`http://127.0.0.1:8000/api/locs/single-data/${pk}/`, {
+    return fetch(`${PATH}/api/locs/single-data/${pk}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -78,7 +80,7 @@ export default class APIService {
   }
 
   static DeleteData(pk, token) {
-    return fetch(`http://127.0.0.1:8000/api/locs/single-data/${pk}/`, {
+    return fetch(`${PATH}/api/locs/single-data/${pk}/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -90,7 +92,7 @@ export default class APIService {
   }
 
   static getForecastData(body, token) {
-    return fetch("http://127.0.0.1:8000/bq/locs/forecast-data/", {
+    return fetch(`${PATH}/bq/locs/forecast-data/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -103,7 +105,7 @@ export default class APIService {
   }
 
   static registerUser(body) {
-    return fetch("http://127.0.0.1:8000/api/users/", {
+    return fetch(`${PATH}/api/users/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -118,7 +120,7 @@ export default class APIService {
   }
 
   static loginUser(body) {
-    return fetch("http://127.0.0.1:8000/api/token/", {
+    return fetch(`${PATH}/api/token/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -134,7 +136,7 @@ export default class APIService {
   }
 
   static RequestPasswordEmail(body) {
-    return fetch("http://127.0.0.1:8000/api/request-reset-email/", {
+    return fetch(`${PATH}/api/request-reset-email/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -149,7 +151,7 @@ export default class APIService {
   }
 
   static ResetPassword(body) {
-    return fetch("http://127.0.0.1:8000/api/password-reset-complete/", {
+    return fetch(`${PATH}/api/password-reset-complete/`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -164,7 +166,7 @@ export default class APIService {
   }
 
   static ChangePassword(body, token) {
-    return fetch("http://127.0.0.1:8000/api/change-password/", {
+    return fetch(`${PATH}/api/change-password/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
