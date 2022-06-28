@@ -162,4 +162,20 @@ export default class APIService {
       return response.json();
     });
   }
+
+  static ChangePassword(body, token) {
+    return fetch("http://127.0.0.1:8000/api/change-password/", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    }).then((response) => {
+      if (response.status !== 200) {
+        throw response;
+      }
+      return response.json();
+    });
+  }
 }

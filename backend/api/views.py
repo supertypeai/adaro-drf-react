@@ -13,6 +13,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from yaml import serialize
 
 from .models import Location, LocationData
 from .serializers import (
@@ -22,6 +23,7 @@ from .serializers import (
     MyTokenObtainPairSerializer,
     ResetPasswordEmailRequestSerializer,
     SetNewPasswordSerializer,
+    ChangePasswordSerializer
 )
 
 
@@ -141,20 +143,54 @@ Note: The password above is randomly generated. Do change it to your personal pa
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
-    # def update(self, request, pk=None):
-    #     queryset = User.objects.all()
-    #     user = get_object_or_404(queryset, pk=pk)
-    #     serializer = UserSerializer(user, data=request.data, context={"id": pk})
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def destroy(self, request, pk=None):
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# @api_view(["PUT"])
+# @permission_classes(
+#     [IsAuthenticated, ]
+# )
+# def UserChangePassword(request, pk=None):
+#     queryset = User.objects.all()
+#     user = get_object_or_404(queryset, pk=pk)
+#     serializer = UserSerializer(user, data=request.data)
+#     if serializer.is_valid():
+#         serializer.save()
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ChangePasswordView(generics.UpdateAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            if not self.object.check_password(serializer.data.get("old_password")):
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+
+            self.object.set_password(serializer.data.get("new_password"))
+            self.object.save()
+            response = {
+                'status': "success",
+                "code": status.HTTP_200_OK,
+                "message": "Password Updated Successfully",
+                "data": [],
+            }
+
+            return Response(response)
+
+        return Response({'status': "error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RequestPasswordResetEmail(generics.GenericAPIView):

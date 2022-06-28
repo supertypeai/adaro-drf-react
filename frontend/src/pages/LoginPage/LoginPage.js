@@ -145,6 +145,7 @@ const LoginPage = () => {
                 setMessage={setMessage}
                 setVisible={setVisible}
                 setStatus={setStatus}
+                setError={setError}
               />
             ) : (
               <InputToken

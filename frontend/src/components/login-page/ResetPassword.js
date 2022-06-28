@@ -4,7 +4,7 @@ import { MailOutlined } from "@ant-design/icons";
 
 import APIService from "../../APIService";
 
-const ResetPassword = ({ setMessage, setVisible, setStatus }) => {
+const ResetPassword = ({ setMessage, setVisible, setStatus, setError }) => {
   const [resetInfo, setResetInfo] = useState({
     email: "",
   });
@@ -15,6 +15,7 @@ const ResetPassword = ({ setMessage, setVisible, setStatus }) => {
     // send email
     APIService.RequestPasswordEmail(resetInfo);
 
+    setError(false);
     setMessage({
       message: "Email Sent!",
       description: "Check your email to reset your password.",
