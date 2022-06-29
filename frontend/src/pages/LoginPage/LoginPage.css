@@ -23,8 +23,19 @@
   background-attachment: fixed;
   font-family: "Montserrat", sans-serif;
 }
+
+@media screen and (max-width: 768px) {
+  .login-page {
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .login-page > *:nth-child(2) {
+    margin-top: 2em;
+  }
+}
+
 .login-box {
-  min-width: 35%;
   background: rgba(10, 7, 7, 0.5);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);

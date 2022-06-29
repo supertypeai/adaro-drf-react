@@ -1,5 +1,5 @@
 import { Form, Popconfirm, Table, Typography } from "antd";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLogin } from "../../contexts/UserContext";
 import EditableCell from "./EditableCell";
 
@@ -90,7 +90,7 @@ const EditableTable = ({
               Save
             </Typography.Link>
             <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-              <a>Cancel</a>
+              <a href="#!">Cancel</a>
             </Popconfirm>
           </span>
         ) : (
@@ -128,11 +128,9 @@ const EditableTable = ({
   };
 
   const save = async (id) => {
-    // console.log(id)
     try {
       const row = await form.validateFields();
       const newData = [...data];
-      console.log(row);
       const index = newData.findIndex((item) => id === item.id);
       const item = newData[index];
       const updatedEntry = {

@@ -1,23 +1,23 @@
-export default class APIService {
+const PATH = "https://20220629t214607-dot-adaro-data-warehouse.et.r.appspot.com";
 
+export default class APIService {
   static GetLocations(token) {
-    return fetch("http://localhost:8000/api/locs/", {
+    return fetch(`${PATH}/api/locs/`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
-    })
-      .then((resp) => resp.json());
+    }).then((resp) => resp.json());
   }
 
   static AddLocation(body, token) {
-    return fetch("http://127.0.0.1:8000/api/locs/", {
+    return fetch(`${PATH}/api/locs/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
@@ -26,10 +26,10 @@ export default class APIService {
   }
 
   static GetData(locId, token) {
-    return fetch(`http://127.0.0.1:8000/api/locs/data/${locId}`, {
+    return fetch(`${PATH}/api/locs/data/${locId}`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
@@ -54,11 +54,11 @@ export default class APIService {
   }
 
   static AddData(locId, body, token) {
-    return fetch(`http://127.0.0.1:8000/api/locs/data/${locId}/`, {
+    return fetch(`${PATH}/api/locs/data/${locId}/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
@@ -67,11 +67,11 @@ export default class APIService {
   }
 
   static EditData(pk, body, token) {
-    return fetch(`http://127.0.0.1:8000/api/locs/single-data/${pk}/`, {
+    return fetch(`${PATH}/api/locs/single-data/${pk}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
@@ -80,23 +80,23 @@ export default class APIService {
   }
 
   static DeleteData(pk, token) {
-    return fetch(`http://127.0.0.1:8000/api/locs/single-data/${pk}/`, {
+    return fetch(`${PATH}/api/locs/single-data/${pk}/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
-    })
+    });
   }
 
   static getForecastData(body, token) {
-    return fetch("http://127.0.0.1:8000/bq/locs/forecast-data/", {
+    return fetch(`${PATH}/bq/locs/forecast-data/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
         // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
         // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
@@ -105,35 +105,78 @@ export default class APIService {
   }
 
   static registerUser(body) {
-    return fetch("http://127.0.0.1:8000/api/users/", {
+    return fetch(`${PATH}/api/users/`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    })
-      .then((response) => {
-        if (response.status !== 201) {
-          throw response;
-        }
-        return response.json();
-      })
+    }).then((response) => {
+      if (response.status !== 201) {
+        throw response;
+      }
+      return response.json();
+    });
   }
 
   static loginUser(body) {
-    return fetch("http://127.0.0.1:8000/api/token/", {
+    return fetch(`${PATH}/api/token/`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    })
-      .then((response) => {
-        console.log(response)
-        if (response.status !== 200) {
-          throw response;
-        }
-        return response.json();
-      })
+    }).then((response) => {
+      if (response.status !== 200) {
+        throw response;
+      }
+      return response.json();
+    });
+  }
+
+  static RequestPasswordEmail(body) {
+    return fetch(`${PATH}/api/request-reset-email/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }).then((response) => {
+      if (response.status !== 200) {
+        throw response;
+      }
+      return response.json();
+    });
+  }
+
+  static ResetPassword(body) {
+    return fetch(`${PATH}/api/password-reset-complete/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }).then((response) => {
+      if (response.status !== 200) {
+        throw response;
+      }
+      return response.json();
+    });
+  }
+
+  static ChangePassword(body, token) {
+    return fetch(`${PATH}/api/change-password/`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    }).then((response) => {
+      if (response.status !== 200) {
+        throw response;
+      }
+      return response.json();
+    });
   }
 }

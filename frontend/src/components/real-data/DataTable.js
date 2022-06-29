@@ -38,9 +38,9 @@ const DataTable = ({ loc, data, setData, locCategory }) => {
                   Delete
                 </Typography.Link>
               </Popconfirm>
-            )
-          }
-        }
+            );
+          },
+        },
       ]);
     } else {
       setColumns([
@@ -74,22 +74,20 @@ const DataTable = ({ loc, data, setData, locCategory }) => {
                   Delete
                 </Typography.Link>
               </Popconfirm>
-            )
-          }
-        }
+            );
+          },
+        },
       ]);
     }
   }, [locCategory, data]);
 
   const handleDelete = (record) => {
-    APIService.DeleteData(record.id, authTokens.access)
-      .then((res) => {
-        console.log(res)
-        setTempData((old) => {
-          return old.filter((d) => d.id !== record.id)
-        })
-      })
-  }
+    APIService.DeleteData(record.id, authTokens.access).then((res) => {
+      setTempData((old) => {
+        return old.filter((d) => d.id !== record.id);
+      });
+    });
+  };
 
   return <Table dataSource={tempData} columns={columns} rowKey="id" />;
 };

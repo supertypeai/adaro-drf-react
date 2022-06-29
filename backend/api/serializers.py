@@ -1,5 +1,6 @@
 from unittest.util import _MAX_LENGTH
 from libcst import Pass
+from numpy import require
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import Location, LocationData
@@ -119,3 +120,10 @@ class SetNewPasswordSerializer(serializers.Serializer):
             raise AuthenticationFailed('The reset link is invalid.', 401)
 
         return super().validate(attrs)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    model = User
+
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
