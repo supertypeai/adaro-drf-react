@@ -33,14 +33,14 @@ const ChangePasswordModal = ({ openModal, setOpenModal }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setOpenModal(false);
     APIService.ChangePassword(password, authTokens.access)
       .then((response) => {
-        setOpenModal(false);
         successMessage();
         form.resetFields();
       })
       .catch((e) => {
-        setOpenModal(false);
+        // setOpenModal(false);
         errorMessage();
         form.resetFields();
       });
