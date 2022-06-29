@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Button,
   Modal,
@@ -9,7 +9,6 @@ import {
   Select,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import { useLocation } from "react-router-dom";
 import { useLogin } from "../contexts/UserContext";
 import moment from "moment";
 
@@ -37,12 +36,7 @@ const AddData = ({
     ...initialState,
   });
 
-  const location = useLocation();
   const { authTokens } = useLogin();
-
-  // useEffect(() => {
-  //   setNewData({ ...newData, location: locId });
-  // }, [location, newData, locId]);
 
   const [openModal, setOpenModal] = useState(false);
 

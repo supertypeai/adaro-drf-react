@@ -1,5 +1,5 @@
 import { Form, Popconfirm, Table, Typography } from "antd";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLogin } from "../../contexts/UserContext";
 import EditableCell from "./EditableCell";
 
@@ -90,7 +90,7 @@ const EditableTable = ({
               Save
             </Typography.Link>
             <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-              <a>Cancel</a>
+              <a href="#!">Cancel</a>
             </Popconfirm>
           </span>
         ) : (

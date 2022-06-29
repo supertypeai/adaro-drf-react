@@ -1,11 +1,9 @@
-import React, { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React from "react";
+import { Link } from "react-router-dom";
 import { Layout, Typography, Row, Col, Card } from "antd";
 import { useAPI } from "../../contexts/LocationContext";
-import { useLogin } from "../../contexts/UserContext";
 
 import Navbar from "../../components/navbar/Navbar";
-import AddLocation from "../../components/AddLocation";
 
 import adaroLogo from "../../images/adaro-logo.png";
 
