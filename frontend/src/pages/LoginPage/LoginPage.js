@@ -149,6 +149,7 @@ const LoginPage = () => {
                 setStatus={setStatus}
                 error={null}
                 setError={setError}
+                setLoading={setLoading}
               />
             ) : status === "reset-password-failed" ? (
               <ResetPassword
@@ -159,6 +160,7 @@ const LoginPage = () => {
                 setStatus={setStatus}
                 error={error}
                 setError={setError}
+                setLoading={setLoading}
               />
             ) : (
               <InputToken

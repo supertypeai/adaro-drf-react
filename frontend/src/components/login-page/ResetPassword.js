@@ -4,15 +4,14 @@ import { MailOutlined } from "@ant-design/icons";
 
 import APIService from "../../APIService";
 
-const ResetPassword = ({ setMessage, visible, setVisible, message, setStatus, error, setError }) => {
+const ResetPassword = ({ setMessage, visible, setVisible, message, setStatus, error, setError, setLoading }) => {
   const [resetInfo, setResetInfo] = useState({
     email: "",
   });
   const [form] = Form.useForm();
   const handleResetSubmit = (event) => {
     event.preventDefault();
-    // setLoading(true);
-    // send email
+    setLoading(true)
     APIService.RequestPasswordEmail(resetInfo)
       .then((resp) => {
         setError(false);
@@ -20,19 +19,22 @@ const ResetPassword = ({ setMessage, visible, setVisible, message, setStatus, er
           message: "Email Sent!",
           description: "Check your email to reset your password.",
         });
+        setLoading(false);
         setStatus("reset-password-details");
+        setVisible(true);
+
       })
       .catch(err => {
-        console.log("hi i am called")
         setError(true);
         setMessage({
           message: "Reset Password Failed!",
           description: "This email is invalid."
         });
+        setLoading(false)
         setStatus("reset-password-failed");
         form.resetFields()
+        setVisible(true);
       })
-    setVisible(true);
   };
 
   const handleChange = (e) => {
