@@ -127,7 +127,6 @@ export default class APIService {
       },
       body: JSON.stringify(body),
     }).then((response) => {
-      console.log(response);
       if (response.status !== 200) {
         throw response;
       }

@@ -40,8 +40,6 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
 
   const handleReset = () => {
     setFilteredData(data);
-    console.log(data);
-    console.log(filteredData);
   };
 
   return (

@@ -128,11 +128,9 @@ const EditableTable = ({
   };
 
   const save = async (id) => {
-    // console.log(id)
     try {
       const row = await form.validateFields();
       const newData = [...data];
-      console.log(row);
       const index = newData.findIndex((item) => id === item.id);
       const item = newData[index];
       const updatedEntry = {
