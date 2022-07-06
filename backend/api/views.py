@@ -73,6 +73,8 @@ def locationData(request, locId):
     elif request.method == "POST":
         newData = request.data
         serializer = LocationDataSerializer(data=newData)
+        print(newData)
+        print(serializer)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
