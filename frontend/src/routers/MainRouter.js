@@ -5,6 +5,7 @@ import Home from "../pages/Home/Home";
 import DataPage from "../pages/DataPage/DataPage";
 import ForecastPage from "../pages/ForecastPage/ForecastPage";
 import LoginPage from "../pages/LoginPage/LoginPage";
+import GoogleDataStudio from "../pages/GoogleDataStudio/GoogleDataStudio";
 import ProtectedRoute from "./ProtectedRoute";
 import { useLogin } from "../contexts/UserContext";
 
@@ -40,6 +41,14 @@ const MainRouter = () => {
           element={
             <ProtectedRoute user={token}>
               <ForecastPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={`/google-data-studio`}
+          element={
+            <ProtectedRoute user={token}>
+              <GoogleDataStudio />
             </ProtectedRoute>
           }
         />

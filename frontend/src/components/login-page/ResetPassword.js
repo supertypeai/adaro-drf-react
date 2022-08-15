@@ -1,27 +1,40 @@
 import React, { useState } from "react";
-import { Form, Input, Button } from "antd";
+import { Form, Input, Button, Alert } from "antd";
 import { MailOutlined } from "@ant-design/icons";
 
 import APIService from "../../APIService";
 
-const ResetPassword = ({ setMessage, setVisible, setStatus, setError }) => {
+const ResetPassword = ({ setMessage, visible, setVisible, message, setStatus, error, setError, setLoading }) => {
   const [resetInfo, setResetInfo] = useState({
     email: "",
   });
-
+  const [form] = Form.useForm();
   const handleResetSubmit = (event) => {
     event.preventDefault();
-    // setLoading(true);
-    // send email
-    APIService.RequestPasswordEmail(resetInfo);
+    setLoading(true)
+    APIService.RequestPasswordEmail(resetInfo)
+      .then((resp) => {
+        setError(false);
+        setMessage({
+          message: "Email Sent!",
+          description: "Check your email to reset your password.",
+        });
+        setLoading(false);
+        setStatus("reset-password-details");
+        setVisible(true);
 
-    setError(false);
-    setMessage({
-      message: "Email Sent!",
-      description: "Check your email to reset your password.",
-    });
-    setVisible(true);
-    setStatus("reset-password-details");
+      })
+      .catch(err => {
+        setError(true);
+        setMessage({
+          message: "Reset Password Failed!",
+          description: "This email is invalid."
+        });
+        setLoading(false)
+        setStatus("reset-password-failed");
+        form.resetFields()
+        setVisible(true);
+      })
   };
 
   const handleChange = (e) => {
@@ -34,6 +47,7 @@ const ResetPassword = ({ setMessage, setVisible, setStatus, setError }) => {
 
   return (
     <Form
+      form={form}
       name="login-form"
       initialValues={{ remember: true }}
       onSubmitCapture={handleResetSubmit}
@@ -43,6 +57,22 @@ const ResetPassword = ({ setMessage, setVisible, setStatus, setError }) => {
         Enter your email address below, and we'll email instructions on setting
         a new password.
       </p>
+      {visible && (
+        <Alert
+          style={{
+            marginLeft: "auto",
+            marginRight: "auto",
+            marginBottom: "20px",
+            textAlign: "left",
+          }}
+          message={message.message}
+          description={message.description}
+          type={error ? "error" : "success"}
+          showIcon
+          closable
+          afterClose={() => setVisible(false)}
+        />
+      )}
       <Form.Item
         name="email"
         rules={[{ required: true, message: "Please input your email." }]}

@@ -42,19 +42,17 @@ def getForecastData(request):
         if loc_requested == "muara_tuhup":
 
             # Weekly Forecast Data
-            mt_forecast_dataset = (
-                "adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test"
-            )
+            mt_forecast_dataset = "adaro-data-warehouse.muara_tuhup_forecasts"
             mt_one_week_forecast = [
                 table.table_id for table in client.list_tables(mt_forecast_dataset)
-            ][-7:]
+            ][-3:]
 
             mt_forecast_list = []
 
             for day in mt_one_week_forecast:
                 query_string = f"""
                     SELECT *
-                    FROM `adaro-data-warehouse.muara_tuhup_prediction_new_deployment_test.{day}`
+                    FROM `adaro-data-warehouse.muara_tuhup_forecasts.{day}`
                 """
 
                 forecast_query_result = client.query(query_string).result()

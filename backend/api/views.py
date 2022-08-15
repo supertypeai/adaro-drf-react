@@ -11,7 +11,12 @@ from django.contrib.auth.models import User
 from django.shortcuts import HttpResponse, get_object_or_404
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.encoding import (
+    smart_str,
+    force_str,
+    smart_bytes,
+    DjangoUnicodeDecodeError,
+)
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from yaml import serialize
 
@@ -23,7 +28,7 @@ from .serializers import (
     MyTokenObtainPairSerializer,
     ResetPasswordEmailRequestSerializer,
     SetNewPasswordSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
 )
 
 
@@ -57,7 +62,7 @@ class LocationListView(viewsets.ModelViewSet):
 
 @api_view(["GET", "POST"])
 @permission_classes(
-    [IsAuthenticated, ]
+    [IsAuthenticated,]
 )
 def locationData(request, locId):
     if request.method == "GET":
@@ -68,6 +73,8 @@ def locationData(request, locId):
     elif request.method == "POST":
         newData = request.data
         serializer = LocationDataSerializer(data=newData)
+        print(newData)
+        print(serializer)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -76,7 +83,7 @@ def locationData(request, locId):
 
 @api_view(["GET", "PUT", "DELETE"])
 @permission_classes(
-    [IsAuthenticated, ]
+    [IsAuthenticated,]
 )
 def singleLocationData(request, pk):
     try:
@@ -163,6 +170,7 @@ Note: The password above is randomly generated. Do change it to your personal pa
 #         return Response(serializer.data, status=status.HTTP_200_OK)
 #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
     permission_classes = (IsAuthenticated,)
@@ -177,12 +185,15 @@ class ChangePasswordView(generics.UpdateAPIView):
 
         if serializer.is_valid():
             if not self.object.check_password(serializer.data.get("old_password")):
-                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"old_password": ["Wrong password."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             self.object.set_password(serializer.data.get("new_password"))
             self.object.save()
             response = {
-                'status': "success",
+                "status": "success",
                 "code": status.HTTP_200_OK,
                 "message": "Password Updated Successfully",
                 "data": [],
@@ -190,7 +201,7 @@ class ChangePasswordView(generics.UpdateAPIView):
 
             return Response(response)
 
-        return Response({'status': "error"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "error"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RequestPasswordResetEmail(generics.GenericAPIView):
@@ -199,7 +210,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
-        email = request.data['email']
+        email = request.data["email"]
 
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
@@ -221,8 +232,13 @@ Note: Do not share the link above with anyone!
                 "adaro@supertype.ai",
                 [email],
             )
-
-        return Response({"success": "We have sent you a link to reset your password."}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": "We have sent you a link to reset your password."},
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"message": "This email is invalid."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class PasswordTokenCheckAPI(generics.GenericAPIView):
@@ -232,18 +248,27 @@ class PasswordTokenCheckAPI(generics.GenericAPIView):
             user = User.objects.get(id=id)
 
             if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'error': "Token is not valid, please request a new one."}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response(
+                    {"error": "Token is not valid, please request a new one."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
 
-            return Response({
-                'success': True,
-                'message': 'Credentials Valid',
-                "uidb64": uidb64,
-                "token": token
-            }, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "success": True,
+                    "message": "Credentials Valid",
+                    "uidb64": uidb64,
+                    "token": token,
+                },
+                status=status.HTTP_200_OK,
+            )
 
         except DjangoUnicodeDecodeError as identifier:
             if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'error': 'Token is not valid, please request a new one.'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response(
+                    {"error": "Token is not valid, please request a new one."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
 
 
 class SetNewPasswordAPIView(generics.GenericAPIView):
@@ -254,6 +279,6 @@ class SetNewPasswordAPIView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         return Response(
-            {'success': True, 'message': "Password has been reset successfully"},
-            status=status.HTTP_200_OK
+            {"success": True, "message": "Password has been reset successfully"},
+            status=status.HTTP_200_OK,
         )

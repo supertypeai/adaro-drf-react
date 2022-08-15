@@ -27,8 +27,8 @@ const AddData = ({
 }) => {
   const initialState = {
     date: "",
-    hour: "",
-    measurement: "",
+    hour: null,
+    measurement: null,
     location: locId,
   };
 
@@ -41,6 +41,7 @@ const AddData = ({
   const [openModal, setOpenModal] = useState(false);
 
   const handleOk = () => {
+    console.log(newData);
     APIService.AddData(locId, newData, authTokens.access)
       .then((response) => {
         setData([response, ...data]);

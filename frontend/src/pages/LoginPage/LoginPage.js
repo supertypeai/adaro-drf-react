@@ -143,9 +143,24 @@ const LoginPage = () => {
             ) : status === "reset-password" ? (
               <ResetPassword
                 setMessage={setMessage}
+                visible={null}
                 setVisible={setVisible}
+                message={message}
                 setStatus={setStatus}
+                error={null}
                 setError={setError}
+                setLoading={setLoading}
+              />
+            ) : status === "reset-password-failed" ? (
+              <ResetPassword
+                setMessage={setMessage}
+                visible={visible}
+                setVisible={setVisible}
+                message={message}
+                setStatus={setStatus}
+                error={error}
+                setError={setError}
+                setLoading={setLoading}
               />
             ) : (
               <InputToken
