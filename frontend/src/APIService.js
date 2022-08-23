@@ -1,4 +1,4 @@
-const PATH = "https://20220706t160721-dot-adaro-data-warehouse.et.r.appspot.com";
+const PATH = "https://adaro-data-warehouse.et.r.appspot.com";
 // const PATH = "http://localhost:8000";
 
 export default class APIService {
@@ -7,8 +7,6 @@ export default class APIService {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
-        // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
-        // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
     }).then((resp) => resp.json());
   }
@@ -19,8 +17,6 @@ export default class APIService {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
-        // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
-        // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
@@ -31,8 +27,6 @@ export default class APIService {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
-        // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
-        // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
     })
       .then((response) => response.json())
@@ -60,8 +54,6 @@ export default class APIService {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
-        // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
-        // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
@@ -73,8 +65,6 @@ export default class APIService {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
-        // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
-        // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());
@@ -86,8 +76,6 @@ export default class APIService {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
-        // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
-        // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
     });
   }
@@ -98,8 +86,6 @@ export default class APIService {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
-        // "Authorization": "Token a5a6d1e4d36c9742497e347e58755a5883d7843f",
-        // "Authorization": "Token e97756b569afa2bc841fcc5d98df11c63ac53b56"
       },
       body: JSON.stringify(body),
     }).then((response) => response.json());

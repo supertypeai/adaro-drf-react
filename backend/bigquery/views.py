@@ -104,9 +104,12 @@ def getForecastData(request):
         else:  # Insert other locations' forecast here!
             print(loc_requested)
             forecast_dataset = f"adaro-data-warehouse.{loc_requested}_forecasts"
-            one_week_forecast = [
-                table.table_id for table in client.list_tables(forecast_dataset)
-            ][-3:]
+            try:
+                one_week_forecast = [
+                    table.table_id for table in client.list_tables(forecast_dataset)
+                ][-3:]
+            except:
+                return JsonResponse({"response": "empty"})
             forecast_list = []
             for day in one_week_forecast:
                 query_string = f"""
