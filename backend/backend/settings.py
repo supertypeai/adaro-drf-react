@@ -204,9 +204,9 @@ CSRF_TRUSTED_ORIGINS = [
 #     "GOOGLE_APPLICATION_CREDENTIALS"
 # ] = "/Users/owenngimli/Programming/ADARO/backend/credentials/adaro-data-warehouse-00f03ed46103.json"
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "D:/Supertype/2021-2022/adaro-drf-react/backend/adaro-data-warehouse-7005b9f0c27e.json"
-os.environ[
-    "GOOGLE_APPLICATION_CREDENTIALS"
-] = "D:/Work/Supertype/adaro-drf-react/backend/adaro-data-warehouse-97f4ef317884.json"
+# os.environ[
+#     "GOOGLE_APPLICATION_CREDENTIALS"
+# ] = "D:/Work/Supertype/adaro-drf-react/backend/adaro-data-warehouse-97f4ef317884.json"
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (

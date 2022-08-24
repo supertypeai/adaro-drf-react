@@ -1,14 +1,10 @@
 import React from "react";
 import { Pie } from "@ant-design/charts";
 
-const ThreeMonthsPie = ({ monthlyData }) => {
-  function sum(items, prop) {
-    return items.reduce(function (a, b) {
-      return a + b[prop];
-    }, 0);
-  }
+const ThreeMonthsPie = ({ loadableData }) => {
+  console.log(loadableData);
 
-  const sailable = sum(monthlyData, "loadable_monthly");
+  const sailable = Object.values(loadableData).reduce((a, b) => a + b, 0);
   const nonSailable = 93 - sailable;
 
   const data = [

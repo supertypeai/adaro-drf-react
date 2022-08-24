@@ -13,6 +13,8 @@ from django.shortcuts import HttpResponse
 
 from google.cloud import bigquery
 
+import calendar
+from datetime import datetime
 from pandas import DataFrame
 import json
 
@@ -80,7 +82,7 @@ def getForecastData(request):
                 mt_forecast_wide_json = mt_forecast_wide.to_json(orient="records")
 
             # Monthly Forecast Data
-            table_id = "adaro-data-warehouse.muara_tuhup_loadabledays_forecast.forecast_loadabledays"
+            table_id = "adaro-data-warehouse.muara_tuhup_loadabledays_forecast.loadable_days_forecast"
             query_string = f"""
                 SELECT *
                 FROM `{table_id}`
@@ -88,16 +90,42 @@ def getForecastData(request):
             query_job = client.query(query_string).result()
 
             query_result = DataFrame([dict(row) for row in query_job]).sort_values(
-                ["year", "month"], ascending=True
+                ["year"], ascending=True
             )
-            mt_monthly_forecast = query_result.tail(3).to_json(orient="records")
+            query_result.index = query_result["year"]
+            query_result.drop("year", axis=1, inplace=True)
 
+            mt_monthly_forecast = query_result.to_json(orient="index")
+
+            three_months_loadable = {}
+
+            target_months = [
+                datetime.now().month,
+                datetime.now().month + 1,
+                datetime.now().month + 2,
+            ]
+
+            for month in target_months:
+                if month <= 12:
+                    three_months_loadable[
+                        f"{calendar.month_name[month]} {datetime.now().year}"
+                    ] = query_result.loc[
+                        f"Predicted {datetime.now().year}", calendar.month_name[month]
+                    ]
+                else:
+                    three_months_loadable[
+                        f"{calendar.month_name[month]} {datetime.now().year+1}"
+                    ] = query_result.loc[
+                        f"Predicted {datetime.now().year+1}",
+                        calendar.month_name[month - 12],
+                    ]
             return JsonResponse(
                 {
                     "response": "success",
                     "data": mt_forecast_json,
                     "data_wide": mt_forecast_wide_json,
                     "monthly_data": mt_monthly_forecast,
+                    "three_months_loadable": json.dumps(three_months_loadable),
                 }
             )
 

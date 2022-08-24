@@ -1,11 +1,11 @@
 import React from "react";
 import { Column } from "@ant-design/charts";
 
-const ThreeMonthsBar = ({ monthlyData }) => {
-  const data = monthlyData.map((x) => {
+const ThreeMonthsBar = ({ loadableData }) => {
+  const data = Object.keys(loadableData).map((month) => {
     return {
-      ...x,
-      datetime: `${x["month"]} ${x["year"]}`,
+      loadable_monthly: loadableData[month],
+      datetime: month,
     };
   });
 
