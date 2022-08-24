@@ -77,7 +77,7 @@ const ForecastComponent = ({ loc }) => {
                   <ThreeMonthsBar loadableData={loadableData} />
                 </div>
               </div>
-              <div>
+              <div className="three-months-forecast-wrapper">
                 <ThreeMonthsTable monthlyData={monthlyData} />
               </div>
             </>

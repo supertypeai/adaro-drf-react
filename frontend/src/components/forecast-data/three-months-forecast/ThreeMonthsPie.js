@@ -2,7 +2,6 @@ import React from "react";
 import { Pie } from "@ant-design/charts";
 
 const ThreeMonthsPie = ({ loadableData }) => {
-  console.log(loadableData);
 
   const sailable = Object.values(loadableData).reduce((a, b) => a + b, 0);
   const nonSailable = 93 - sailable;

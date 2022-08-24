@@ -27,11 +27,8 @@ function ThreeMonthsTable({ monthlyData }) {
         columns.push(temp)
     })
 
-    console.log(columns)
-    console.log(dataSource)
-
     return (
-        <Table rowClassName={(record, index) => index === Object.keys(monthlyData).length - 1 ? 'table-row-highlighted' : ''} dataSource={dataSource} columns={columns} bordered />
+        <Table rowClassName={(record, index) => index === Object.keys(monthlyData).length - 1 ? 'table-row-highlighted' : ''} dataSource={dataSource} columns={columns} bordered scroll={{ x: 400 }} />
     )
 }
 
