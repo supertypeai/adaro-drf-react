@@ -32,10 +32,10 @@ def sail_status(row):
     return status
 
 
+@api_view(["POST"])
 @permission_classes(
     [IsAuthenticated,]
 )
-@api_view(["POST"])
 @csrf_exempt
 def getForecastData(request):
     client = bigquery.Client()
@@ -176,11 +176,11 @@ def getForecastData(request):
             )
 
 
+@api_view(["POST"])
 @permission_classes(
     [IsAuthenticated,]
 )
 @authentication_classes([TokenAuthentication])
-@api_view(["POST"])
 @csrf_exempt
 def postSensorData(request):
     client = bigquery.Client()
