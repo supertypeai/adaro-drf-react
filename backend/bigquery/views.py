@@ -16,6 +16,7 @@ from google.cloud import bigquery
 import calendar
 from datetime import datetime
 from pandas import DataFrame
+import pandas_gbq
 import json
 
 
@@ -173,3 +174,29 @@ def getForecastData(request):
                     "data_wide": forecast_wide_json,
                 }
             )
+
+
+@permission_classes(
+    [IsAuthenticated,]
+)
+@authentication_classes([TokenAuthentication])
+@api_view(["POST"])
+@csrf_exempt
+def postSensorData(request):
+    client = bigquery.Client()
+
+    if request.method == "POST":
+        body = json.loads(request.body)
+        if body["location"] == "muara_tuhup":
+            pandas_gbq.to_gbq(
+                dataframe=DataFrame(body["rows"]),
+                destination_table=f"adaro-data-warehouse.muara_tuhup_sensor.muara_tuhup_sensor",
+                project_id="adaro-data-warehouse",
+                location="asia-southeast2",
+                if_exists="append",
+                # api_method="load_csv",
+            )
+            return JsonResponse(
+                {"response": f"success in inserting {len(body['rows'])} rows"}
+            )
+
