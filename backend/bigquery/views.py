@@ -187,16 +187,15 @@ def postSensorData(request):
 
     if request.method == "POST":
         body = json.loads(request.body)
-        if body["location"] == "muara_tuhup":
-            pandas_gbq.to_gbq(
-                dataframe=DataFrame(body["rows"]),
-                destination_table=f"adaro-data-warehouse.muara_tuhup_sensor.muara_tuhup_sensor",
-                project_id="adaro-data-warehouse",
-                location="asia-southeast2",
-                if_exists="append",
-                # api_method="load_csv",
-            )
-            return JsonResponse(
-                {"response": f"success in inserting {len(body['rows'])} rows"}
-            )
+        pandas_gbq.to_gbq(
+            dataframe=DataFrame(body["rows"]),
+            destination_table=f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor",
+            project_id="adaro-data-warehouse",
+            location="asia-southeast2",
+            if_exists="append",
+            # api_method="load_csv",
+        )
+        return JsonResponse(
+            {"response": f"success in inserting {len(body['rows'])} rows"}
+        )
 
