@@ -1,3 +1,4 @@
+import re
 from rest_framework import status
 from rest_framework.decorators import (
     api_view,
@@ -132,8 +133,7 @@ def getForecastData(request):
                 }
             )
 
-        else:  # Insert other locations' forecast here!
-            print(loc_requested)
+        else:
             forecast_dataset = f"adaro-data-warehouse.{loc_requested}_forecasts"
             try:
                 one_week_forecast = [
@@ -188,33 +188,94 @@ def postSensorData(request):
     client = bigquery.Client()
 
     if request.method == "POST":
+        if len(request.body) == 0:
+            return Response(
+                {"status": "missing parameter"}, status=status.HTTP_400_BAD_REQUEST
+            )
         body = json.loads(request.body)
         if set(body.keys()) != {"location", "rows"}:
             return Response(
-                {"status": "invalid/missing fields are provided"},
+                {"status": "invalid or missing fields are provided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if set(body["rows"].keys()) != {
+        if set(body["rows"][0].keys()) != {
             "measurement",
             "power_supply_status",
             "battery_status",
-            "solar_panel_status, electricity_status, month, day, year, minute, hour, second",
+            "solar_panel_status",
+            "electricity_status",
+            "month",
+            "day",
+            "year",
+            "minute",
+            "hour",
+            "second",
         }:
             return Response(
-                {"status": "invalid/missing schema in rows are provided"},
+                {"status": "invalid or missing schema in rows are provided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        pandas_gbq.to_gbq(
-            dataframe=DataFrame(body["rows"]),
-            destination_table=f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor",
-            project_id="adaro-data-warehouse",
-            location="asia-southeast2",
-            if_exists="append",
-            # api_method="load_csv",
+        try:
+            pandas_gbq.to_gbq(
+                dataframe=DataFrame(body["rows"]),
+                destination_table=f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor",
+                project_id="adaro-data-warehouse",
+                location="asia-southeast2",
+                if_exists="append",
+                # api_method="load_csv",
+            )
+            return JsonResponse(
+                {"response": f"success in inserting {len(body['rows'])} rows"}
+            )
+        except:
+            return Response(
+                {"response": "failed to insert rows"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+@api_view(["POST"])
+@permission_classes(
+    [IsAuthenticated,]
+)
+@authentication_classes([TokenAuthentication])
+@csrf_exempt
+def getSensorData(request):
+    client = bigquery.Client()
+
+    if request.method == "POST":
+        if len(request.body) == 0:
+            return Response(
+                {"status": "missing parameter"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        body = json.loads(request.body)
+        if set(body.keys()) != {"location"}:
+            return Response(
+                {"status": "invalid or missing fields are provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        table_id = (
+            f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor"
         )
-        return JsonResponse(
-            {"response": f"success in inserting {len(body['rows'])} rows"}
-        )
+        query_string = f"""
+            SELECT *
+            FROM `{table_id}`
+        """
+
+        try:
+            query_job = client.query(query_string).result()
+
+            query_result = DataFrame([dict(row) for row in query_job])
+
+            return JsonResponse(
+                {"response": "success", "data": query_result.to_json(orient="index")}
+            )
+        except:
+            return Response(
+                {"response": "invalid location requested"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 

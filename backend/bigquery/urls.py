@@ -11,7 +11,8 @@ urlpatterns = [
     # path("", include(router.urls)),
     # path("locs/data/<int:locId>/", views.locationData, name="locs-data"),
     path("locs/forecast-data/", views.getForecastData, name="forecast-data"),
-    path("sensor/data/", views.postSensorData, name="muara_tuhup_sensor"),
+    path("sensor/data/insert", views.postSensorData, name="muara_tuhup_sensor-post"),
+    path("sensor/data/retrieve", views.getSensorData, name="muara_tuhup_sensor-get"),
     # path(
     #     # "locs/single-data/<int:pk>/",
     #     views.singleLocationData,
