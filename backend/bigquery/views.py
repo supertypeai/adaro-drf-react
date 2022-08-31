@@ -1,3 +1,4 @@
+from rest_framework import status
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -5,6 +6,7 @@ from rest_framework.decorators import (
 )
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -187,6 +189,23 @@ def postSensorData(request):
 
     if request.method == "POST":
         body = json.loads(request.body)
+        if set(body.keys()) != {"location", "rows"}:
+            return Response(
+                {"status": "invalid/missing fields are provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if set(body["rows"].keys()) != {
+            "measurement",
+            "power_supply_status",
+            "battery_status",
+            "solar_panel_status, electricity_status, month, day, year, minute, hour, second",
+        }:
+            return Response(
+                {"status": "invalid/missing schema in rows are provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         pandas_gbq.to_gbq(
             dataframe=DataFrame(body["rows"]),
             destination_table=f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor",
