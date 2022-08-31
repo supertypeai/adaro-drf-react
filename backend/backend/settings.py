@@ -27,7 +27,7 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -186,16 +186,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOW_ALL_ORIGIN = True
 CORS_ALLOWED_ORIGINS = [
     "https://adaro-data-warehouse.netlify.app",
-    "http://localhost:3000",
+    # "http://localhost:3000",
 ]
 CORS_ORIGIN_WHITELIST = (
     "https://adaro-data-warehouse.netlify.app",
-    "http://localhost:3000",
+    # "http://localhost:3000",
 )
 
 CSRF_TRUSTED_ORIGINS = [
     "https://adaro-data-warehouse.netlify.app",
-    "http://localhost:3000",
+    # "http://localhost:3000",
 ]
 
 
@@ -204,9 +204,9 @@ CSRF_TRUSTED_ORIGINS = [
 #     "GOOGLE_APPLICATION_CREDENTIALS"
 # ] = "/Users/owenngimli/Programming/ADARO/backend/credentials/adaro-data-warehouse-00f03ed46103.json"
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "D:/Supertype/2021-2022/adaro-drf-react/backend/adaro-data-warehouse-7005b9f0c27e.json"
-os.environ[
-    "GOOGLE_APPLICATION_CREDENTIALS"
-] = "D:/Work/Supertype/adaro-drf-react/backend/adaro-data-warehouse-97f4ef317884.json"
+# os.environ[
+#     "GOOGLE_APPLICATION_CREDENTIALS"
+# ] = "D:/Work/Supertype/adaro-drf-react/backend/adaro-data-warehouse-97f4ef317884.json"
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
