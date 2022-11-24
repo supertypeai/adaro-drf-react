@@ -1,5 +1,7 @@
 # [START django_app]
 runtime: python39
+env_variables:
+  APPENGINE_URL: adaro-data-warehouse.et.r.appspot.com/
 app_engine_apis: true
 handlers:
 # This configures Google App Engine to serve the files in the app's

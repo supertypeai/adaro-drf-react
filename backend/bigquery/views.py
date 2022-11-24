@@ -18,7 +18,7 @@ from google.cloud import bigquery
 
 import calendar
 from datetime import datetime
-from pandas import DataFrame
+import pandas as pd
 import pandas_gbq
 import json
 
@@ -71,7 +71,7 @@ def getForecastData(request):
                     key=lambda x: (x["date"], (float(x["hour"]) - 6) % 24),
                 )
 
-                mt_forecast_df = DataFrame(mt_forecast_list)
+                mt_forecast_df = pd.DataFrame(mt_forecast_list)
 
                 # Turn dataframe to long format
                 mt_forecast_df_melted = mt_forecast_df.melt(id_vars=["date", "hour"])
@@ -93,7 +93,7 @@ def getForecastData(request):
             """
             query_job = client.query(query_string).result()
 
-            query_result = DataFrame([dict(row) for row in query_job]).sort_values(
+            query_result = pd.DataFrame([dict(row) for row in query_job]).sort_values(
                 ["year"], ascending=True
             )
             query_result.index = query_result["year"]
@@ -117,12 +117,17 @@ def getForecastData(request):
                         f"Predicted {datetime.now().year}", calendar.month_name[month]
                     ]
                 else:
-                    three_months_loadable[
-                        f"{calendar.month_name[month]} {datetime.now().year+1}"
-                    ] = query_result.loc[
-                        f"Predicted {datetime.now().year+1}",
-                        calendar.month_name[month - 12],
-                    ]
+                    if f"Predicted {datetime.now().year + 1}" in query_result.index:
+                        three_months_loadable[
+                            f"{calendar.month_name[month - 12]} {datetime.now().year+1}"
+                        ] = query_result.loc[
+                            f"Predicted {datetime.now().year+1}",
+                            calendar.month_name[month - 12],
+                        ]
+                    else:
+                        three_months_loadable[
+                            f"{calendar.month_name[month - 12]} {datetime.now().year+1}"
+                        ] = None
             return JsonResponse(
                 {
                     "response": "success",
@@ -155,7 +160,7 @@ def getForecastData(request):
 
                 forecast_list = sorted(forecast_list, key=lambda x: (x["date"]),)
 
-                forecast_df = DataFrame(forecast_list)
+                forecast_df = pd.DataFrame(forecast_list)
 
                 # Turn dataframe to long format
                 forecast_df_melted = forecast_df.melt(id_vars=["date"])
@@ -218,8 +223,10 @@ def postSensorData(request):
             )
 
         try:
+            df = pd.DataFrame(body["rows"])
+            df["measurement"] = df["measurement"] + 14.2
             pandas_gbq.to_gbq(
-                dataframe=DataFrame(body["rows"]),
+                dataframe=df,
                 destination_table=f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor",
                 project_id="adaro-data-warehouse",
                 location="asia-southeast2",
@@ -268,7 +275,7 @@ def getSensorData(request):
         try:
             query_job = client.query(query_string).result()
 
-            query_result = DataFrame([dict(row) for row in query_job])
+            query_result = pd.DataFrame([dict(row) for row in query_job])
 
             return JsonResponse(
                 {"response": "success", "data": query_result.to_json(orient="index")}
@@ -279,3 +286,72 @@ def getSensorData(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+
+@api_view(["POST"])
+@permission_classes(
+    [IsAuthenticated,]
+)
+@csrf_exempt
+def getDataForFrontEnd(request):
+    client = bigquery.Client()
+
+    if request.method == "POST":
+        if len(request.body) == 0:
+            return Response(
+                {"status": "missing parameter"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        body = json.loads(request.body)
+        if set(body.keys()) != {"location"}:
+            return Response(
+                {"status": "invalid or missing fields are provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        table_id = (
+            f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor"
+        )
+        query_string = f"""
+            SELECT *
+            FROM `{table_id}`
+        """
+
+        try:
+            query_job = client.query(query_string).result()
+            df = pd.DataFrame([dict(row) for row in query_job])
+            temp = df.copy()
+            temp[["year", "month", "day", "hour", "minute", "second"]] = temp[
+                ["year", "month", "day", "hour", "minute", "second"]
+            ].astype(str)
+            df["timestamp"] = pd.to_datetime(
+                df["year"]
+                + "-"
+                + df["month"]
+                + "-"
+                + df["day"]
+                + " "
+                + df["hour"]
+                + ":"
+                + df["minute"]
+                + ":"
+                + df["second"]
+            )
+            df["date"] = pd.to_datetime(
+                df["year"] + "-" + df["month"] + "-" + df["day"]
+            )
+            df = df.sort_values(by="timestamp").reset_index(drop=True)
+            df = df.tail(20000)
+            df = df[df["power_supply_status"] == 1]
+            df = df[df["battery_status"] == 1]
+            df = df[df["solar_panel_status"] == 1]
+            df = df[df["electricity_status"] == 1]
+            df = df[["measurement", "date", "timestamp", "hour", "minute", "second"]]
+
+            return JsonResponse(
+                {"response": "success", "data": df.to_json(orient="index")}
+            )
+
+        except:
+            return Response(
+                {"response": "invalid location requested"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

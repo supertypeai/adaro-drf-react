@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from urllib.parse import urlparse
+
+import environ
 
 from datetime import timedelta
 
@@ -28,8 +31,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+env = environ.Env(DEBUG=(bool, False))
 
-ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -183,20 +187,40 @@ STATIC_ROOT = "static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOW_ALL_ORIGIN = True
-CORS_ALLOWED_ORIGINS = [
-    "https://adaro-data-warehouse.netlify.app",
-    # "http://localhost:3000",
-]
-CORS_ORIGIN_WHITELIST = (
-    "https://adaro-data-warehouse.netlify.app",
-    # "http://localhost:3000",
-)
+# CORS_ALLOW_ALL_ORIGIN = True
+# CORS_ALLOWED_ORIGINS = [
+#     "https://adaro-data-warehouse.netlify.app",
+#     "http://localhost:3000",
+# ]
+# CORS_ORIGIN_WHITELIST = (
+#     "https://adaro-data-warehouse.netlify.app",
+#     "http://localhost:3000",
+# )
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://adaro-data-warehouse.netlify.app",
-    # "http://localhost:3000",
-]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = ("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+
+# CSRF_TRUSTED_ORIGINS = [
+#     "https://adaro-data-warehouse.netlify.app",
+#     "http://localhost:3000",
+# ]
+
+# SECURITY WARNING: It's recommended that you use this when
+# running in production. The URL will be known once you first deploy
+# to App Engine. This code takes the URL and converts it to both these settings formats.
+APPENGINE_URL = env("APPENGINE_URL", default=None)
+if APPENGINE_URL:
+    # Ensure a scheme is present in the URL before it's processed.
+    if not urlparse(APPENGINE_URL).scheme:
+        APPENGINE_URL = f"https://{APPENGINE_URL}"
+
+    FRONTEND_URL = "https://adaro-data-warehouse.netlify.app"
+    ALLOWED_HOSTS = [urlparse(APPENGINE_URL).netloc, FRONTEND_URL]
+    CSRF_TRUSTED_ORIGINS = [APPENGINE_URL, FRONTEND_URL]
+    SECURE_SSL_REDIRECT = True
+else:
+    ALLOWED_HOSTS = ["*"]
 
 
 # GOOGLE BIGQUERY CREDENTIAL

@@ -13,6 +13,7 @@ urlpatterns = [
     path("locs/forecast-data/", views.getForecastData, name="forecast-data"),
     path("sensor/data/insert", views.postSensorData, name="muara_tuhup_sensor-post"),
     path("sensor/data/retrieve", views.getSensorData, name="muara_tuhup_sensor-get"),
+    path("data/retrieve", views.getDataForFrontEnd, name="biquery-data"),
     # path(
     #     # "locs/single-data/<int:pk>/",
     #     views.singleLocationData,
