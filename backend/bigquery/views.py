@@ -323,20 +323,20 @@ def getDataForFrontEnd(request):
                 ["year", "month", "day", "hour", "minute", "second"]
             ].astype(str)
             df["timestamp"] = pd.to_datetime(
-                df["year"]
+                temp["year"]
                 + "-"
-                + df["month"]
+                + temp["month"]
                 + "-"
-                + df["day"]
+                + temp["day"]
                 + " "
-                + df["hour"]
+                + temp["hour"]
                 + ":"
-                + df["minute"]
+                + temp["minute"]
                 + ":"
-                + df["second"]
+                + temp["second"]
             )
             df["date"] = pd.to_datetime(
-                df["year"] + "-" + df["month"] + "-" + df["day"]
+                temp["year"] + "-" + temp["month"] + "-" + temp["day"]
             )
             df = df.sort_values(by="timestamp").reset_index(drop=True)
             df = df.tail(20000)
@@ -344,7 +344,8 @@ def getDataForFrontEnd(request):
             df = df[df["battery_status"] == 1]
             df = df[df["solar_panel_status"] == 1]
             df = df[df["electricity_status"] == 1]
-            df = df[["measurement", "date", "timestamp", "hour", "minute", "second"]]
+            df = df[["measurement", "date", "hour", "minute", "second"]]
+            df["date"] = df["date"].dt.strftime("%Y-%m-%d")
 
             return JsonResponse(
                 {"response": "success", "data": df.to_json(orient="index")}
