@@ -348,7 +348,7 @@ def getDataForFrontEnd(request):
             df["date"] = df["date"].dt.strftime("%Y-%m-%d")
 
             return JsonResponse(
-                {"response": "success", "data": df.to_json(orient="index")}
+                {"response": "success", "data": df.to_json(orient="records")}
             )
 
         except:
