@@ -347,8 +347,16 @@ def getDataForFrontEnd(request):
             df = df[["measurement", "date", "hour", "minute", "second"]]
             df["date"] = df["date"].dt.strftime("%Y-%m-%d")
 
+            copy_df = df.copy()
+            copy_df = copy_df.drop_duplicates(subset=["date", "hour"], keep="first")
+            copy_df = copy_df[["date", "hour", "measurement"]]
+
             return JsonResponse(
-                {"response": "success", "data": df.to_json(orient="records")}
+                {
+                    "response": "success",
+                    "table_data": df.to_json(orient="records"),
+                    "chart_data": copy_df.to_json(orient="records"),
+                }
             )
 
         except:
