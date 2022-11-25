@@ -338,8 +338,8 @@ def getDataForFrontEnd(request):
             df["date"] = pd.to_datetime(
                 temp["year"] + "-" + temp["month"] + "-" + temp["day"]
             )
-            df = df.sort_values(by="timestamp").reset_index(drop=True)
-            df = df.tail(20000)
+            df = df.sort_values(by="timestamp", ascending=False).reset_index(drop=True)
+            df = df.head(20000)
             df = df[df["power_supply_status"] == 1]
             df = df[df["battery_status"] == 1]
             df = df[df["solar_panel_status"] == 1]
