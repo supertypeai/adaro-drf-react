@@ -17,11 +17,12 @@ function GoogleDataStudio() {
             <Content style={{ minHeight: "100vh" }}>
                 <iframe
                     title="DataStudio"
-                    height={"700px"}
-                    src="https://datastudio.google.com/embed/reporting/6a2d4029-f809-4036-9420-0cbe2cfdce57/page/p_fvyq1bw4vc"
-                    frameBorder="0"
+                    width="600"
+                    height="1322"
+                    src="https://lookerstudio.google.com/embed/reporting/dda1149a-50df-4dc2-af77-214bc4075823/page/p_00acbtzk9c"
+                    frameborder="0"
                     style={{ "border": "0", "minWidth": "100%" }}
-                    allowFullScreen>
+                    allowfullscreen>
                 </iframe>
             </Content>
         </Layout>

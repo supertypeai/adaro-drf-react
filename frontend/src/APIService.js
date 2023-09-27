@@ -23,29 +23,61 @@ export default class APIService {
   }
 
   static GetData(locId, token) {
-    return fetch(`${PATH}/api/locs/data/${locId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((response) =>
-        response.map((x) => {
-          return {
-            ...x,
-            DateHour: `${x["date"]}-${x["hour"]}`,
-          };
+    if (locId === '7') {
+      return fetch(`${PATH}/bq/data/retrieve/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          "location": "muara_tuhup"
         })
-      )
-      .then((response) =>
-        response.sort(function (a, b) {
-          return (
-            // Descending order of date
-            b.date.localeCompare(a.date) || parseInt(a.hour) - parseInt(b.hour)
-          );
+      })
+        .then(response => response.json())
+        .then(response => {
+          return JSON.parse(response['table_data'])
         })
-      );
+        .then((response) =>
+          response.map((x) => {
+            return {
+              ...x,
+              DateHour: `${x["date"]}-${x["hour"]}`,
+            };
+          })
+        )
+        .then((response) =>
+          response.sort(function (a, b) {
+            return (
+              // Descending order of date
+              b.date.localeCompare(a.date) || parseInt(a.hour) - parseInt(b.hour)
+            );
+          }))
+    } else {
+      return fetch(`${PATH}/api/locs/data/${locId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((response) =>
+          response.map((x) => {
+            return {
+              ...x,
+              DateHour: `${x["date"]}-${x["hour"]}`,
+            };
+          })
+        )
+        .then((response) =>
+          response.sort(function (a, b) {
+            return (
+              // Descending order of date
+              b.date.localeCompare(a.date) || parseInt(a.hour) - parseInt(b.hour)
+            );
+          })
+        );
+    }
   }
 
   static AddData(locId, body, token) {

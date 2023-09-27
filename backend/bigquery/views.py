@@ -301,6 +301,7 @@ def getDataForFrontEnd(request):
                 {"status": "missing parameter"}, status=status.HTTP_400_BAD_REQUEST
             )
         body = json.loads(request.body)
+        print(body)
         if set(body.keys()) != {"location"}:
             return Response(
                 {"status": "invalid or missing fields are provided"},
@@ -339,16 +340,18 @@ def getDataForFrontEnd(request):
                 temp["year"] + "-" + temp["month"] + "-" + temp["day"]
             )
             df = df.sort_values(by="timestamp", ascending=False).reset_index(drop=True)
-            df = df.head(20000)
             df = df[df["power_supply_status"] == 1]
             df = df[df["battery_status"] == 1]
             df = df[df["solar_panel_status"] == 1]
             df = df[df["electricity_status"] == 1]
             df = df[["measurement", "date", "hour", "minute", "second"]]
             df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+            df = df.drop_duplicates(subset=["date", "hour"], keep="first")
+            df = df.reset_index()
+            df = df.rename(columns={"index": "id"})
+            df = df.head(20000)
 
             copy_df = df.copy()
-            copy_df = copy_df.drop_duplicates(subset=["date", "hour"], keep="first")
             copy_df = copy_df[["date", "hour", "measurement"]]
 
             return JsonResponse(

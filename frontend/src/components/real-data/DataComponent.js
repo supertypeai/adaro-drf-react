@@ -7,6 +7,7 @@ import AddData from "../AddData";
 import APIService from "../../APIService";
 
 import "./DataComponent.css";
+import DataTable from "./DataTable";
 import EditableTable from "./EditableTable";
 
 const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
@@ -58,17 +59,20 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
           ) : null}
 
           <div className="button-wrapper">
-            <div className="left">
-              <AddData
-                locId={locId}
-                locTitle={locTitle}
-                locCategory={locCategory}
-                data={data}
-                setData={setData}
-                filteredData={filteredData}
-                setFilteredData={setFilteredData}
-              />
-            </div>
+            {locTitle !== "Muara Tuhup" ?
+              (<div className="left">
+                <AddData
+                  locId={locId}
+                  locTitle={locTitle}
+                  locCategory={locCategory}
+                  data={data}
+                  setData={setData}
+                  filteredData={filteredData}
+                  setFilteredData={setFilteredData}
+                />
+              </div>) :
+              (<div className="left"></div>)
+            }
             <div className="right">
               <DatePicker
                 picker="month"
@@ -86,16 +90,17 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
               </Button>
             </div>
           </div>
-
-          {/* <DataTable data={filteredData} setData={setData} loc={loc} locCategory={locCategory} /> */}
-          <EditableTable
-            filteredData={filteredData}
-            setFilteredData={setFilteredData}
-            data={data}
-            setData={setData}
-            loc={loc}
-            locCategory={locCategory}
-          ></EditableTable>
+          {locTitle === "Muara Tuhup" ?
+            (<DataTable data={filteredData} setData={setData} loc={loc} locCategory={locCategory} />) :
+            (<EditableTable
+              filteredData={filteredData}
+              setFilteredData={setFilteredData}
+              data={data}
+              setData={setData}
+              loc={loc}
+              locCategory={locCategory}
+            ></EditableTable>)
+          }
         </Space>
       )}
     </>
