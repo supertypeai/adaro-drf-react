@@ -301,7 +301,7 @@ def getDataForFrontEnd(request):
                 {"status": "missing parameter"}, status=status.HTTP_400_BAD_REQUEST
             )
         body = json.loads(request.body)
-        print(body)
+
         if set(body.keys()) != {"location"}:
             return Response(
                 {"status": "invalid or missing fields are provided"},
