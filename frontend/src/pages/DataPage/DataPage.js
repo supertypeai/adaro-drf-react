@@ -91,6 +91,7 @@ const DataPage = () => {
               locId={params.id}
               locTitle={loc.length !== 0 ? loc[0].title : "Loading..."}
               locCategory={loc.length !== 0 ? loc[0].category : "Loading..."}
+              isSensor={loc.length !== 0 ? loc[0].sensor : "loading..."}
             />
           </div>
         </Content>

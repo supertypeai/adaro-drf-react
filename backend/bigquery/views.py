@@ -224,7 +224,7 @@ def postSensorData(request):
 
         try:
             df = pd.DataFrame(body["rows"])
-            df["measurement"] = df["measurement"] + 14.2
+            df["measurement"] = df["measurement"]
             pandas_gbq.to_gbq(
                 dataframe=df,
                 destination_table=f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor",
@@ -242,6 +242,50 @@ def postSensorData(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+
+@api_view(["POST"])
+@permission_classes(
+    [IsAuthenticated,]
+)
+@authentication_classes([TokenAuthentication])
+@csrf_exempt
+def listSensorData(request):
+    client = bigquery.Client()
+
+    if request.method == "POST":
+        if len(request.body) == 0:
+            return Response(
+                {"status": "missing parameter"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        body = json.loads(request.body)
+        if set(body.keys()) != {"location"}:
+            return Response(
+                {"status": "invalid or missing fields are provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        table_id = (
+            f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor"
+        )
+        query_string = f"""
+            SELECT *
+            FROM `{table_id}`
+        """
+
+        try:
+            query_job = client.query(query_string).result()
+
+            query_result = pd.DataFrame([dict(row) for row in query_job])
+
+            return JsonResponse(
+                {"response": "success", "data": query_result.to_json(orient="index")}
+            )
+        except:
+            return Response(
+                {"response": "invalid location requested"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
 
 @api_view(["POST"])
 @permission_classes(
@@ -267,9 +311,20 @@ def getSensorData(request):
         table_id = (
             f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor"
         )
+
         query_string = f"""
-            SELECT *
+            SELECT
+            measurement,
+            power_supply_status,
+            battery_status,
+            solar_panel_status,
+            electricity_status,
+            CAST(TIMESTAMP(CONCAT(CAST(year AS STRING), '-', CAST(month AS STRING), '-', CAST(day AS STRING), ' ',
+                                CAST(hour AS STRING), ':', CAST(minute AS STRING), ':', CAST(second AS STRING))) AS STRING) AS datetime
             FROM `{table_id}`
+            ORDER BY TIMESTAMP(datetime) DESC
+            LIMIT 1;
+
         """
 
         try:

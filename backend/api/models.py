@@ -19,6 +19,7 @@ class Location(models.Model):
     longitude = models.FloatField()
     latitude = models.FloatField()
     category = models.CharField(max_length=10, choices=CATEGORIES, default="daily")
+    sensor = models.BooleanField(default=False, blank=False, null=False)
 
     def __str__(self):
         return self.name

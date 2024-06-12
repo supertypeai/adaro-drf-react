@@ -14,6 +14,7 @@ const { Title } = Typography;
 
 const Home = () => {
   const { locations } = useAPI();
+  const sortedLocations = [...locations].sort((a, b) => a.latitude - b.latitude);
   // const { authTokens } = useLogin();
   // const navigate = useNavigate();
 
@@ -39,7 +40,7 @@ const Home = () => {
           </div> */}
 
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            {Array.isArray(locations) && locations.map((location) => {
+            {Array.isArray(sortedLocations) && sortedLocations.map((location) => {
               return (
                 <Col xs={24} md={12} lg={8} key={location.id}>
                   <Link to={`/locs/${location.id}`}>
@@ -49,6 +50,7 @@ const Home = () => {
                     >
                       <p>Longitude: {location.longitude}</p>
                       <p>Latitude: {location.latitude}</p>
+                      <p>{location.sensor ? 'Using data from sensor' : 'Using manual data'}</p>
                     </Card>
                   </Link>
                 </Col>

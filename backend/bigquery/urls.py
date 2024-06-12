@@ -11,8 +11,9 @@ urlpatterns = [
     # path("", include(router.urls)),
     # path("locs/data/<int:locId>/", views.locationData, name="locs-data"),
     path("locs/forecast-data/", views.getForecastData, name="forecast-data"),
-    path("sensor/data/insert", views.postSensorData, name="muara_tuhup_sensor-post"),
-    path("sensor/data/retrieve", views.getSensorData, name="muara_tuhup_sensor-get"),
+    path("sensor/data/insert", views.postSensorData, name="sensor-post"),
+    path("sensor/data/list", views.listSensorData, name="sensor-list"),
+    path("sensor/data/retrieve", views.getSensorData, name="sensor-get"),
     path("data/retrieve/", views.getDataForFrontEnd, name="biquery-data"),
     # path(
     #     # "locs/single-data/<int:pk>/",

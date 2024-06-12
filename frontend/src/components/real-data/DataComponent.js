@@ -10,7 +10,7 @@ import "./DataComponent.css";
 import DataTable from "./DataTable";
 import EditableTable from "./EditableTable";
 
-const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
+const DataComponent = ({ loc, locId, locTitle, locCategory, isSensor }) => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [filterDate, setFilterDate] = useState(null);
@@ -59,7 +59,7 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
           ) : null}
 
           <div className="button-wrapper">
-            {locTitle !== "Muara Tuhup" ?
+            {!isSensor ?
               (<div className="left">
                 <AddData
                   locId={locId}
@@ -90,7 +90,7 @@ const DataComponent = ({ loc, locId, locTitle, locCategory }) => {
               </Button>
             </div>
           </div>
-          {locTitle === "Muara Tuhup" ?
+          {isSensor ?
             (<DataTable data={filteredData} setData={setData} loc={loc} locCategory={locCategory} />) :
             (<EditableTable
               filteredData={filteredData}
