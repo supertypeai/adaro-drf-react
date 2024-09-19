@@ -404,7 +404,7 @@ def getDataForFrontEnd(request):
             df = df.drop_duplicates(subset=["date", "hour"], keep="first")
             df = df.reset_index()
             df = df.rename(columns={"index": "id"})
-            df = df.head(20000)
+            df = df.head(5000)
 
             copy_df = df.copy()
             copy_df = copy_df[["date", "hour", "measurement"]]
