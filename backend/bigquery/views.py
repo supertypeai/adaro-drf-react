@@ -366,59 +366,128 @@ def getDataForFrontEnd(request):
         table_id = (
             f"adaro-data-warehouse.{body['location']}_sensor.{body['location']}_sensor"
         )
+
         query_string = f"""
-            SELECT *
-            FROM `{table_id}`
+            WITH ordered_data AS (
+                SELECT 
+                    measurement,
+                    CONCAT(CAST(year AS STRING), '-', LPAD(CAST(month AS STRING), 2, '0'), '-', LPAD(CAST(day AS STRING), 2, '0')) AS date,
+                    hour,
+                    minute,
+                    second,
+                    TIMESTAMP(CONCAT(CAST(year AS STRING), '-', LPAD(CAST(month AS STRING), 2, '0'), '-', LPAD(CAST(day AS STRING), 2, '0'), ' ', 
+                        LPAD(CAST(hour AS STRING), 2, '0'), ':', LPAD(CAST(minute AS STRING), 2, '0'), ':', LPAD(CAST(second AS STRING), 2, '0'))) AS constructed_timestamp,
+                    ROW_NUMBER() OVER (PARTITION BY year, month, day, hour ORDER BY year, month, day, hour, minute, second) AS rn
+                FROM `{table_id}`
+                WHERE power_supply_status = 1
+                AND battery_status = 1
+                AND solar_panel_status = 1
+                AND electricity_status = 1
+            )
+            SELECT 
+                measurement,
+                date,
+                hour,
+                minute,
+                second,
+                constructed_timestamp
+            FROM ordered_data
+            WHERE rn = 1
+            ORDER BY constructed_timestamp DESC
+            LIMIT 5000
         """
 
         try:
-            query_job = client.query(query_string).result()
-            df = pd.DataFrame([dict(row) for row in query_job])
-            temp = df.copy()
-            temp[["year", "month", "day", "hour", "minute", "second"]] = temp[
-                ["year", "month", "day", "hour", "minute", "second"]
-            ].astype(str)
-            df["timestamp"] = pd.to_datetime(
-                temp["year"]
-                + "-"
-                + temp["month"]
-                + "-"
-                + temp["day"]
-                + " "
-                + temp["hour"]
-                + ":"
-                + temp["minute"]
-                + ":"
-                + temp["second"]
-            )
-            df["date"] = pd.to_datetime(
-                temp["year"] + "-" + temp["month"] + "-" + temp["day"]
-            )
-            df = df.sort_values(by="timestamp", ascending=False).reset_index(drop=True)
-            df = df[df["power_supply_status"] == 1]
-            df = df[df["battery_status"] == 1]
-            df = df[df["solar_panel_status"] == 1]
-            df = df[df["electricity_status"] == 1]
-            df = df[["measurement", "date", "hour", "minute", "second"]]
-            df["date"] = df["date"].dt.strftime("%Y-%m-%d")
-            df = df.drop_duplicates(subset=["date", "hour"], keep="first")
-            df = df.reset_index()
-            df = df.rename(columns={"index": "id"})
-            df = df.head(5000)
+            query_job = client.query(query_string)
+            id = 0
+            data = []
+            chart_data = []
+            for row in query_job:
+                record = {
+                    "id": id,
+                    "measurement": row["measurement"],
+                    "date": row["date"],
+                    "hour": row["hour"],
+                    "minute": row["minute"],
+                    "second": row["second"],
+                }
 
-            copy_df = df.copy()
-            copy_df = copy_df[["date", "hour", "measurement"]]
+                id += 1
+
+                chart_record = {
+                    "measurement": row["measurement"],
+                    "date": row["date"],
+                    "hour": row["hour"],
+                }
+                data.append(record)
+                chart_data.append(chart_record)
 
             return JsonResponse(
                 {
                     "response": "success",
-                    "table_data": df.to_json(orient="records"),
-                    "chart_data": copy_df.to_json(orient="records"),
+                    "table_data": data,
+                    "chart_data": chart_data
                 }
             )
-
-        except:
+        except Exception as e:
             return Response(
                 {"response": "invalid location requested"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+        # query_string = f"""
+        #     SELECT *
+        #     FROM `{table_id}`
+        # """
+
+        # try:
+        #     query_job = client.query(query_string).result()
+        #     df = pd.DataFrame([dict(row) for row in query_job])
+        #     temp = df.copy()
+        #     temp[["year", "month", "day", "hour", "minute", "second"]] = temp[
+        #         ["year", "month", "day", "hour", "minute", "second"]
+        #     ].astype(str)
+        #     df["timestamp"] = pd.to_datetime(
+        #         temp["year"]
+        #         + "-"
+        #         + temp["month"]
+        #         + "-"
+        #         + temp["day"]
+        #         + " "
+        #         + temp["hour"]
+        #         + ":"
+        #         + temp["minute"]
+        #         + ":"
+        #         + temp["second"]
+        #     )
+        #     df["date"] = pd.to_datetime(
+        #         temp["year"] + "-" + temp["month"] + "-" + temp["day"]
+        #     )
+        #     df = df.sort_values(by="timestamp", ascending=False).reset_index(drop=True)
+        #     df = df[df["power_supply_status"] == 1]
+        #     df = df[df["battery_status"] == 1]
+        #     df = df[df["solar_panel_status"] == 1]
+        #     df = df[df["electricity_status"] == 1]
+        #     df = df[["measurement", "date", "hour", "minute", "second"]]
+        #     df["date"] = df["date"].dt.strftime("%Y-%m-%d")
+        #     df = df.drop_duplicates(subset=["date", "hour"], keep="first")
+        #     df = df.reset_index()
+        #     df = df.rename(columns={"index": "id"})
+        #     df = df.head(5000)
+
+        #     copy_df = df.copy()
+        #     copy_df = copy_df[["date", "hour", "measurement"]]
+
+        #     return JsonResponse(
+        #         {
+        #             "response": "success",
+        #             "table_data": df.to_json(orient="records"),
+        #             "chart_data": copy_df.to_json(orient="records"),
+        #         }
+        #     )
+
+        # except:
+        #     return Response(
+        #         {"response": "invalid location requested"},
+        #         status=status.HTTP_400_BAD_REQUEST,
+        #     )

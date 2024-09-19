@@ -36,7 +36,7 @@ export default class APIService {
       })
         .then(response => response.json())
         .then(response => {
-          return JSON.parse(response['table_data'])
+          return response['table_data']
         })
         .then((response) =>
           response.map((x) => {
@@ -46,13 +46,13 @@ export default class APIService {
             };
           })
         )
-        .then((response) =>
-          response.sort(function (a, b) {
-            return (
-              // Descending order of date
-              b.date.localeCompare(a.date) || parseInt(a.hour) - parseInt(b.hour)
-            );
-          }))
+      // .then((response) =>
+      //   response.sort(function (a, b) {
+      //     return (
+      //       // Descending order of date
+      //       b.date.localeCompare(a.date) || parseInt(a.hour) - parseInt(b.hour)
+      //     );
+      //   }))
     } else {
       return fetch(`${PATH}/api/locs/data/${locId}`, {
         method: "GET",
