@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { APIProvider, Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps';
 import { useNavigate } from "react-router-dom";
-import { Layout, Typography, Row, Col, Card } from "antd";
+import { Layout, Typography } from "antd";
 import { useAPI } from "../../contexts/LocationContext";
 
 import Navbar from "../../components/navbar/Navbar";

@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/static/css/main.4b8862f3.css",
-    "main.js": "/static/js/main.c855f009.js",
+    "main.css": "/static/css/main.35e61db6.css",
+    "main.js": "/static/js/main.a4fbbcca.js",
     "static/media/login-bg.jpg": "/static/media/login-bg.b6dac91fc5c92c28c384.jpg",
     "static/media/supertype.png": "/static/media/supertype.afa0abd9bc9ed2fd8095.png",
     "static/media/adaro-logo.png": "/static/media/adaro-logo.40ace97692e5a534a1dd.png",
     "index.html": "/index.html",
-    "main.4b8862f3.css.map": "/static/css/main.4b8862f3.css.map",
-    "main.c855f009.js.map": "/static/js/main.c855f009.js.map"
+    "main.35e61db6.css.map": "/static/css/main.35e61db6.css.map",
+    "main.a4fbbcca.js.map": "/static/js/main.a4fbbcca.js.map"
   },
   "entrypoints": [
-    "static/css/main.4b8862f3.css",
-    "static/js/main.c855f009.js"
+    "static/css/main.35e61db6.css",
+    "static/js/main.a4fbbcca.js"
   ]
 }

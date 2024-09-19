@@ -31,7 +31,7 @@ const DataComponent = ({ loc, locId, locTitle, locCategory, isSensor }) => {
         setLoading(false);
       })
       .catch((error) => console.log(error));
-  }, [locId, loc, authTokens]);
+  }, [locId, isSensor, loc, authTokens]);
 
   const handleDate = (_, dateString) => {
     setFilterDate(dateString);

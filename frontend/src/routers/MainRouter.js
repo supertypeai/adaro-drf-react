@@ -1,7 +1,5 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-import Home from "../pages/Home/Home";
 import Maps from "../pages/Maps/Maps";
 import DataPage from "../pages/DataPage/DataPage";
 import ForecastPage from "../pages/ForecastPage/ForecastPage";
