@@ -1,0 +1,27 @@
+.ant-card {
+    border-color: transparent;
+    transition: border-color 0.3s ease;
+}
+
+.ant-card:hover {
+    border-color: #537ec5;
+}
+
+.ant-btn-primary {
+    background-color: rgb(59 130 246);
+}
+
+.site-layout-background {
+    background: #ffffff;
+    padding: 12px;
+    min-height: 100vh;
+    /* min-width: 100vw; */
+    display: flex;
+    flex-direction: column;
+}
+
+.map-container {
+    flex: 1;
+    min-height: 100vh;
+    /* Ensuring there's a minimum height for the map container */
+}

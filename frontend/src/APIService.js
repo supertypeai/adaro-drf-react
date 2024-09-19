@@ -1,5 +1,5 @@
-const PATH = "https://adaro-data-warehouse.et.r.appspot.com";
-// const PATH = "http://localhost:8000";
+// const PATH = "https://adaro-data-warehouse.et.r.appspot.com";
+const PATH = "http://localhost:8000";
 
 export default class APIService {
   static GetLocations(token) {
@@ -22,8 +22,8 @@ export default class APIService {
     }).then((response) => response.json());
   }
 
-  static GetData(locId, token) {
-    if (locId === '7') {
+  static GetData(locId, isSensor, locKey, token) {
+    if (isSensor) {
       return fetch(`${PATH}/bq/data/retrieve/`, {
         method: "POST",
         headers: {
@@ -31,7 +31,7 @@ export default class APIService {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          "location": "muara_tuhup"
+          "location": locKey
         })
       })
         .then(response => response.json())

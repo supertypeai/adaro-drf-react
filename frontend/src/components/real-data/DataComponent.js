@@ -11,6 +11,8 @@ import DataTable from "./DataTable";
 import EditableTable from "./EditableTable";
 
 const DataComponent = ({ loc, locId, locTitle, locCategory, isSensor }) => {
+
+  console.log(loc);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [filterDate, setFilterDate] = useState(null);
@@ -22,7 +24,7 @@ const DataComponent = ({ loc, locId, locTitle, locCategory, isSensor }) => {
 
   useEffect(() => {
     setLoading(true);
-    APIService.GetData(locId, authTokens.access)
+    APIService.GetData(locId, isSensor, loc, authTokens.access)
       .then((response) => {
         setData(response);
         setFilteredData(response);
