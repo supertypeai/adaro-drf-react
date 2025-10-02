@@ -12,7 +12,6 @@ import EditableTable from "./EditableTable";
 
 const DataComponent = ({ loc, locId, locTitle, locCategory, isSensor }) => {
 
-  console.log(loc);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [filterDate, setFilterDate] = useState(null);

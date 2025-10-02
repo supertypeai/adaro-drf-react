@@ -1,5 +1,5 @@
-const PATH = "https://adaro-data-warehouse.et.r.appspot.com";
-// const PATH = "http://localhost:8000";
+// const PATH = "https://adaro-data-warehouse.et.r.appspot.com";
+const PATH = "http://localhost:8000";
 
 export default class APIService {
   static GetLocations(token) {
@@ -114,6 +114,17 @@ export default class APIService {
 
   static getForecastData(body, token) {
     return fetch(`${PATH}/bq/locs/forecast-data/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    }).then((response) => response.json());
+  }
+
+  static getV3ForecastData(body, token) {
+    return fetch(`${PATH}/bq/v3/tuhup/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

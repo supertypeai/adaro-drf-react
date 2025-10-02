@@ -69,7 +69,6 @@ const Maps = () => {
                                 // disableDefaultUI={true}
                                 />
                                 {Array.isArray(newLocations) && newLocations.map((loc) => {
-                                    console.log(loc)
                                     return (
                                         <AdvancedMarker
                                             title={loc.sensor === false ? loc.key : `${loc.key} - Sensor`}

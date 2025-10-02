@@ -37,7 +37,126 @@ def sail_status(row):
 
 @api_view(["POST"])
 @permission_classes(
-    [IsAuthenticated,]
+    [
+        IsAuthenticated,
+    ]
+)
+@csrf_exempt
+def getV3TuhupForecastData(request):
+    client = bigquery.Client()
+
+    if request.method == "POST":
+        loc_requested = json.loads(request.body)
+        if loc_requested == "muara_tuhup":
+            try:
+                # Get v3 forecast data with performance metrics and weather data
+                table_id = "adaro-data-warehouse.muara_tuhup_forecasts_v3.detailed_forecast_and_weather"
+                query_string = f"""
+                    SELECT 
+                        Date,
+                        Hour,
+                        Actual,
+                        Actual_Rain,
+                        Pred_1d,
+                        Pred_2d,
+                        Pred_3d,
+                        Rain_Forecast_1d,
+                        Rain_Forecast_2d,
+                        Rain_Forecast_3d,
+                        CONCAT(Date, '-', LPAD(CAST(Hour AS STRING), 2, '0')) AS DateHour
+                    FROM `{table_id}`
+                    WHERE PARSE_DATE('%Y-%m-%d', Date) >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+                      AND PARSE_DATE('%Y-%m-%d', Date) <= DATE_ADD(CURRENT_DATE(), INTERVAL 10 DAY)
+                    ORDER BY Date ASC, Hour ASC
+                """
+
+                query_job = client.query(query_string)
+
+                # Convert query results to list of dictionaries without pandas
+                forecast_data = []
+                wide_data = []
+
+                for row in query_job:
+                    row_dict = dict(row)
+
+                    # Add to wide format data (for table display with performance metrics)
+                    wide_record = {
+                        "date": row_dict.get("Date"),
+                        "hour": row_dict.get("Hour"),
+                        "actual": row_dict.get("Actual"),
+                        "actual_rain": row_dict.get("Actual_Rain"),
+                        "pred_1d": row_dict.get("Pred_1d"),
+                        "pred_2d": row_dict.get("Pred_2d"),
+                        "pred_3d": row_dict.get("Pred_3d"),
+                        "rain_forecast_1d": row_dict.get("Rain_Forecast_1d"),
+                        "rain_forecast_2d": row_dict.get("Rain_Forecast_2d"),
+                        "rain_forecast_3d": row_dict.get("Rain_Forecast_3d"),
+                        "DateHour": row_dict.get("DateHour"),
+                    }
+
+                    # Calculate accuracy metrics if actual value exists
+                    if row_dict.get("Actual") is not None:
+                        actual_val = float(row_dict.get("Actual"))
+
+                        # Calculate differences for performance measurement
+                        if row_dict.get("Pred_1d") is not None:
+                            wide_record["diff_1d"] = abs(
+                                actual_val - float(row_dict.get("Pred_1d"))
+                            )
+                        if row_dict.get("Pred_2d") is not None:
+                            wide_record["diff_2d"] = abs(
+                                actual_val - float(row_dict.get("Pred_2d"))
+                            )
+                        if row_dict.get("Pred_3d") is not None:
+                            wide_record["diff_3d"] = abs(
+                                actual_val - float(row_dict.get("Pred_3d"))
+                            )
+
+                    wide_data.append(wide_record)
+
+                    # Create melted format records for graph visualization
+                    for key, value in row_dict.items():
+                        if (
+                            key not in ["Date", "Hour", "DateHour"]
+                            and value is not None
+                        ):
+                            forecast_data.append(
+                                {
+                                    "date": row_dict.get("Date"),
+                                    "hour": row_dict.get("Hour"),
+                                    "variable": key,
+                                    "value": value,
+                                }
+                            )
+
+                return JsonResponse(
+                    {
+                        "response": "success",
+                        "data": forecast_data,
+                        "data_wide": wide_data,
+                        "version": "v3",
+                    },
+                    safe=False,
+                )
+
+            except Exception as e:
+                return JsonResponse(
+                    {
+                        "response": "error",
+                        "message": f"Failed to fetch v3 forecast data: {str(e)}",
+                    },
+                    status=500,
+                )
+
+        else:
+            return JsonResponse({"response": "location not found"})
+
+
+@api_view(["POST"])
+@permission_classes(
+    [
+        IsAuthenticated,
+    ]
 )
 @csrf_exempt
 def getForecastData(request):
@@ -51,7 +170,7 @@ def getForecastData(request):
             mt_forecast_dataset = "adaro-data-warehouse.muara_tuhup_forecasts"
             mt_one_week_forecast = [
                 table.table_id for table in client.list_tables(mt_forecast_dataset)
-            ][-3:]
+            ][-4:]
 
             mt_forecast_list = []
 
@@ -66,12 +185,12 @@ def getForecastData(request):
                 records = [dict(row) for row in forecast_query_result]
                 mt_forecast_list.extend(records)
 
-                mt_forecast_list = sorted(
-                    mt_forecast_list,
-                    key=lambda x: (x["date"], (float(x["hour"]) - 6) % 24),
-                )
+                # mt_forecast_list = sorted(
+                #     mt_forecast_list,
+                #     key=lambda x: (x["date"], (float(x["hour"]) - 6) % 24),
+                # )
 
-                mt_forecast_df = pd.DataFrame(mt_forecast_list)
+                mt_forecast_df = pd.DataFrame(mt_forecast_list).tail(72)
 
                 # Turn dataframe to long format
                 mt_forecast_df_melted = mt_forecast_df.melt(id_vars=["date", "hour"])
@@ -158,7 +277,10 @@ def getForecastData(request):
                 records = [dict(row) for row in forecast_query_result]
                 forecast_list.extend(records)
 
-                forecast_list = sorted(forecast_list, key=lambda x: (x["date"]),)
+                forecast_list = sorted(
+                    forecast_list,
+                    key=lambda x: (x["date"]),
+                )
 
                 forecast_df = pd.DataFrame(forecast_list)
 
@@ -185,7 +307,9 @@ def getForecastData(request):
 
 @api_view(["POST"])
 @permission_classes(
-    [IsAuthenticated,]
+    [
+        IsAuthenticated,
+    ]
 )
 @authentication_classes([TokenAuthentication])
 @csrf_exempt
@@ -245,7 +369,9 @@ def postSensorData(request):
 
 @api_view(["POST"])
 @permission_classes(
-    [IsAuthenticated,]
+    [
+        IsAuthenticated,
+    ]
 )
 @authentication_classes([TokenAuthentication])
 @csrf_exempt
@@ -285,11 +411,13 @@ def listSensorData(request):
                 {"response": "invalid location requested"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
 
 @api_view(["POST"])
 @permission_classes(
-    [IsAuthenticated,]
+    [
+        IsAuthenticated,
+    ]
 )
 @authentication_classes([TokenAuthentication])
 @csrf_exempt
@@ -344,7 +472,9 @@ def getSensorData(request):
 
 @api_view(["POST"])
 @permission_classes(
-    [IsAuthenticated,]
+    [
+        IsAuthenticated,
+    ]
 )
 @csrf_exempt
 def getDataForFrontEnd(request):
@@ -423,18 +553,14 @@ def getDataForFrontEnd(request):
                 chart_data.append(chart_record)
 
             return JsonResponse(
-                {
-                    "response": "success",
-                    "table_data": data,
-                    "chart_data": chart_data
-                }
+                {"response": "success", "table_data": data, "chart_data": chart_data}
             )
         except Exception as e:
             return Response(
                 {"response": "invalid location requested"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         # query_string = f"""
         #     SELECT *
         #     FROM `{table_id}`
