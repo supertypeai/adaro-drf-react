@@ -12,7 +12,7 @@ import {
   Tooltip as ChartTooltip,
   Legend,
 } from 'chart.js';
-import { InfoCircleOutlined, TrophyOutlined, AimOutlined, LineChartOutlined, BarChartOutlined, QuestionCircleOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
+import { InfoCircleOutlined, TrophyOutlined, AimOutlined, LineChartOutlined, BarChartOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";

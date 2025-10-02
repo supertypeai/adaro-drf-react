@@ -44,13 +44,7 @@ const V3PerformanceTable = ({ v3TableData }) => {
     return 'red';                          // Poor (> 100cm)
   };
 
-  const getAccuracyText = (diff) => {
-    if (diff === undefined || diff === null) return 'N/A';
-    if (diff <= 0.25) return 'Excellent';
-    if (diff <= 0.5) return 'Good';
-    if (diff <= 1.0) return 'Fair';
-    return 'Poor';
-  };
+
 
   const columns = [
     {

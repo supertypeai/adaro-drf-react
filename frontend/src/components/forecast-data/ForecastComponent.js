@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Skeleton, Typography, Space, Divider, Alert, Collapse, Row, Col, Card } from "antd";
-import { QuestionCircleOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
+import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import { useLogin } from "../../contexts/UserContext";
 
 import dasMapImage from "../../images/das-muara-tuhup-map.png";
