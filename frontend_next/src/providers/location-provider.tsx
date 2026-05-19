@@ -34,8 +34,12 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
     APIService.getLocations()
       .then((data) => {
-        setLocations(data);
-        localStorage.setItem("locations", JSON.stringify(data));
+        const usedLocations = [11, 9, 7, 8, 10];
+        const filteredLocations = usedLocations
+          .map((id) => data.find(item => item.id == id))
+          .filter((item) => item !== undefined);
+        setLocations(filteredLocations);
+        localStorage.setItem("locations", JSON.stringify(filteredLocations));
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));

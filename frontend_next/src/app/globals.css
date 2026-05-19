@@ -2,6 +2,18 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@keyframes map-pulse {
+  0%   { transform: scale(1.4); opacity: 0.55; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
+.map-pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: map-pulse 2s ease-out infinite;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -128,4 +140,29 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Custom scrollbar styling */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(71, 71, 71, 0.6) rgba(0, 0, 0, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(189, 189, 189, 0.6);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(83, 126, 197, 0.9);
 }

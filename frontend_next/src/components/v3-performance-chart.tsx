@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import type { V3TableRecord } from "@/services/api";
+import { APIService, type V3TableRecord } from "@/services/api";
 import { Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -13,21 +13,20 @@ import {
   Title as ChartTitle,
   Tooltip as ChartTooltip,
   Legend,
-} from 'chart.js';
-import dayjs from "dayjs";
+  Filler,
+} from "chart.js";
+import dayjs, { type Dayjs } from "dayjs";
 import weekday from "dayjs/plugin/weekday";
 import localeData from "dayjs/plugin/localeData";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { Trophy, Info } from "lucide-react";
+import { CloudRain, Settings2, Waves, MapPinned } from "lucide-react";
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "./ui/badge";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import type { DateRange } from "react-day-picker";
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -36,10 +35,10 @@ ChartJS.register(
   BarElement,
   ChartTitle,
   ChartTooltip,
-  Legend
+  Legend,
+  Filler
 );
 
-// Configure dayjs plugins
 dayjs.extend(weekday);
 dayjs.extend(localeData);
 dayjs.extend(customParseFormat);
@@ -48,486 +47,1015 @@ interface V3PerformanceChartProps {
   v3TableData: V3TableRecord[];
 }
 
-type ViewMode = 'latest_vs_actual' | 'historical_forecasts' | 'error_analysis';
+type ViewMode = "latest_vs_actual" | "historical_forecasts" | "error_analysis";
+type RainForecastMode = "1d" | "2d" | "3d" | "all";
+type PanelKey = "rainfall" | "puruk" | "tuhup" | "joloi";
+
+type EnrichedRecord = V3TableRecord & {
+  ts: Dayjs;
+  label: string;
+  locationId: number | undefined;
+  locationName: string | undefined;
+};
+
+function toOptionalNumber(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return undefined;
+}
+
+function toOptionalString(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim() !== "") return value.trim();
+  return undefined;
+}
+
+function normalizeLocationName(name?: string): string {
+  if (!name) return "";
+  return name.toLowerCase().replace(/[\s-]+/g, "_");
+}
+
+function getObservedRain(record?: V3TableRecord): number | null {
+  if (!record) return null;
+  const candidates = [
+    record.rain_actual,
+    record.rainfall,
+    record.rain,
+    record.rain_observed,
+    record.actual_rain,
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+  }
+
+  return null;
+}
+
+function buildLookup(records: EnrichedRecord[]): Map<string, EnrichedRecord> {
+  const lookup = new Map<string, EnrichedRecord>();
+  for (const record of records) {
+    lookup.set(record.label, record);
+  }
+  return lookup;
+}
+
+interface TimelineRailProps {
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+function TimelineRail({ isFirst, isLast }: TimelineRailProps) {
+  const markerTop = "2.25rem";
+
+  return (
+    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+      {!isFirst && (
+        <span
+          className="absolute left-1/2 w-0.5 -translate-x-1/2 bg-gradient-to-b from-blue-500/20 to-blue-500/80"
+          style={{
+            top: 0,
+            bottom: `calc(100% - ${markerTop})`,
+          }}
+        />
+      )}
+      {!isLast && (
+        <span
+          className="absolute left-1/2 w-0.5 -translate-x-1/2 bg-gradient-to-b from-blue-500/80 to-blue-500/20"
+          style={{
+            top: markerTop,
+            bottom: 0,
+          }}
+        />
+      )}
+      <span
+        className="absolute left-1/2 flex h-4 w-4 -translate-x-1/2 items-center justify-center rounded-full border border-blue-400/70 bg-background shadow-[0_0_0_3px_hsl(221_83%_53%_/_0.15)]"
+        style={{ top: `calc(${markerTop} - 0.5rem)` }}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+      </span>
+    </div>
+  );
+}
 
 export function V3PerformanceChart({ v3TableData }: V3PerformanceChartProps) {
-  const availableDateRange = useMemo(() => {
-    if (!v3TableData || v3TableData.length === 0) {
-      return { minDate: dayjs().subtract(7, 'days'), maxDate: dayjs() };
+  const normalizedRecords = useMemo<EnrichedRecord[]>(() => {
+    if (!v3TableData || v3TableData.length === 0) return [];
+
+    const parsedRecords: EnrichedRecord[] = [];
+
+    for (const row of v3TableData) {
+        const hour = toOptionalNumber(row.hour) ?? 0;
+        const parsedTs = dayjs(
+          `${row.date} ${String(Math.trunc(hour)).padStart(2, "0")}:00`,
+          "YYYY-MM-DD HH:mm",
+          true
+        );
+
+        if (!parsedTs.isValid()) continue;
+
+        const locationId =
+          toOptionalNumber(row.location_id) ??
+          toOptionalNumber(row.locationId) ??
+          toOptionalNumber(row.loc_id) ??
+          toOptionalNumber(row.locId);
+
+        const locationName =
+          toOptionalString(row.location_name) ??
+          toOptionalString(row.location) ??
+          toOptionalString(row.loc_name) ??
+          toOptionalString(row.name);
+
+        parsedRecords.push({
+          ...row,
+          ts: parsedTs,
+          label: parsedTs.format("YYYY-MM-DD HH:00"),
+          locationId,
+          locationName,
+        });
     }
-    const dates = v3TableData.map(item => dayjs(item.date)).filter(date => date.isValid());
-    if (dates.length === 0) {
-      return { minDate: dayjs().subtract(60, 'days'), maxDate: dayjs().add(10, 'days') };
-    }
-    let minDate = dates[0];
-    let maxDate = dates[0];
-    dates.forEach(date => {
-      if (date.isBefore(minDate)) minDate = date;
-      if (date.isAfter(maxDate)) maxDate = date;
-    });
-    return { minDate, maxDate };
+
+    return parsedRecords.sort((a, b) => a.ts.valueOf() - b.ts.valueOf());
   }, [v3TableData]);
 
+  const hasLocationMetadata = useMemo(
+    () =>
+      normalizedRecords.some(
+        (row) => row.locationId !== undefined || !!normalizeLocationName(row.locationName)
+      ),
+    [normalizedRecords]
+  );
+
+  const availableDateRange = useMemo(() => {
+    if (normalizedRecords.length === 0) {
+      return { minDate: dayjs().subtract(7, "day"), maxDate: dayjs() };
+    }
+
+    return {
+      minDate: normalizedRecords[0].ts,
+      maxDate: normalizedRecords[normalizedRecords.length - 1].ts,
+    };
+  }, [normalizedRecords]);
+
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
-    const start = availableDateRange.minDate.isAfter(dayjs().subtract(7, 'days')) ?
-      availableDateRange.minDate : dayjs().subtract(7, 'days');
-    const end = availableDateRange.maxDate.isBefore(dayjs()) ?
-      availableDateRange.maxDate : dayjs();
-    return { from: start.toDate(), to: end.toDate() };
+    const defaultFrom = availableDateRange.maxDate.subtract(14, "day");
+    const start = defaultFrom.isAfter(availableDateRange.minDate)
+      ? defaultFrom
+      : availableDateRange.minDate;
+
+    return {
+      from: start.toDate(),
+      to: availableDateRange.maxDate.toDate(),
+    };
   });
 
-  const [viewMode, setViewMode] = useState<ViewMode>('latest_vs_actual');
-  const [showRainForecast, setShowRainForecast] = useState(true);
-  const [rainForecastMode, setRainForecastMode] = useState('1d');
+  const [viewMode, setViewMode] = useState<ViewMode>("latest_vs_actual");
+  const [showRainChart, setShowRainChart] = useState(true);
+  const [rainForecastMode, setRainForecastMode] = useState<RainForecastMode>("all");
+  const [joloiExternalRecords, setJoloiExternalRecords] = useState<EnrichedRecord[]>([]);
+  const [pulsePhase, setPulsePhase] = useState(0);
+  const pulseAlpha = 0.55 + ((Math.sin(pulsePhase) + 1) / 2) * 0.65;
 
   useEffect(() => {
-    const start = availableDateRange.minDate.isAfter(dayjs().subtract(7, 'days')) ?
-      availableDateRange.minDate : dayjs().subtract(7, 'days');
-    const end = availableDateRange.maxDate.isBefore(dayjs()) ?
-      availableDateRange.maxDate : dayjs();
-    setDateRange({ from: start.toDate(), to: end.toDate() });
+    const defaultFrom = availableDateRange.maxDate.subtract(14, "day");
+    const start = defaultFrom.isAfter(availableDateRange.minDate)
+      ? defaultFrom
+      : availableDateRange.minDate;
+
+    setDateRange({
+      from: start.toDate(),
+      to: availableDateRange.maxDate.toDate(),
+    });
   }, [availableDateRange]);
 
-  const filteredTableData = useMemo(() => {
-    if (!v3TableData || !dateRange?.from || !dateRange?.to) return [];
-    
-    const startDate = dayjs(dateRange.from);
-    const endDate = dayjs(dateRange.to);
-    
-    return v3TableData.filter(item => {
-      if (viewMode === 'latest_vs_actual') return true;
-      const itemDate = dayjs(item.date);
-      return itemDate.isAfter(startDate.subtract(1, 'day')) && itemDate.isBefore(endDate.add(1, 'day'));
-    }).sort((a, b) => {
-      const dateCompare = a.date.localeCompare(b.date);
-      return dateCompare !== 0 ? dateCompare : a.hour - b.hour;
-    });
-  }, [v3TableData, dateRange, viewMode]);
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setPulsePhase((prev) => prev + 0.35);
+    }, 80);
+    return () => window.clearInterval(interval);
+  }, []);
 
-  const performanceStats = useMemo(() => {
-    if (!filteredTableData.length) return null;
-    const validData = filteredTableData.filter(item =>
-      item.actual !== null && item.pred_1d !== null && item.pred_2d !== null && item.pred_3d !== null
-    );
-    if (!validData.length) return null;
-    
-    const calculateStats = (diffKey: keyof V3TableRecord) => {
-      const diffs = validData.map(item => item[diffKey] as number).filter(d => d !== undefined && d !== null);
-      if (!diffs.length) return { mae: "0", accuracy: "0", withinGreenZone: "0" };
-      const mae = diffs.reduce((sum, diff) => sum + Math.abs(diff), 0) / diffs.length * 100; // in cm
-      const accuracy = diffs.filter(diff => Math.abs(diff) <= 0.5).length / diffs.length * 100;
-      const withinGreenZone = diffs.filter(diff => Math.abs(diff) * 100 <= 20).length / diffs.length * 100;
-      return { mae: mae.toFixed(2), accuracy: accuracy.toFixed(1), withinGreenZone: withinGreenZone.toFixed(1) };
-    };
-    
-    return {
-      pred_1d: calculateStats('diff_1d'),
-      pred_2d: calculateStats('diff_2d'),
-      pred_3d: calculateStats('diff_3d'),
-      totalMeasurements: validData.length,
-    };
-  }, [filteredTableData]);
+  useEffect(() => {
+    let cancelled = false;
 
-  const chartData = useMemo(() => {
-    if (!filteredTableData || filteredTableData.length === 0) {
-      return { waterLevelChartData: null, rainChartData: null };
-    }
-
-    if (viewMode === 'latest_vs_actual') {
-      const sortedData = [...filteredTableData];
-      const actualRecords = sortedData.filter(item => item.actual !== null);
-      const recentActual = actualRecords.slice(-72);
-      if (recentActual.length === 0) return { waterLevelChartData: null, rainChartData: null };
-      
-      const actualData = recentActual.map(item => item.actual);
-      const actualLabels = recentActual.map(item => `${item.date} ${String(item.hour).padStart(2, '0')}:00`);
-      const lastActualItem = recentActual[recentActual.length - 1];
-      const lastDate = dayjs(`${lastActualItem.date} ${String(lastActualItem.hour).padStart(2, '0')}:00`);
-      
-      const predictionData: (number | null)[] = [];
-      const predictionLabels: string[] = [];
-      
-      for (let hour = 1; hour <= 72; hour++) {
-        const futureTime = lastDate.add(hour, 'hour');
-        predictionLabels.push(futureTime.format('YYYY-MM-DD HH:00'));
-        const hourRecord = sortedData.find(record => dayjs(`${record.date} ${String(record.hour).padStart(2, '0')}:00`).isSame(futureTime));
-        let predValue: number | null = null;
-        if (hourRecord) {
-          if (hour <= 24) predValue = hourRecord.pred_1d;
-          else if (hour <= 48) predValue = hourRecord.pred_2d;
-          else predValue = hourRecord.pred_3d;
-        }
-        predictionData.push(predValue ?? null);
-      }
-      
-      const allLabels = [...actualLabels, ...predictionLabels];
-      const finalData = {
-        labels: allLabels,
-        datasets: [
-          { label: 'Actual Water Level', data: [...actualData, ...new Array(72).fill(null)], borderColor: '#ff4d4f', borderWidth: 2, tension: 0.3, pointRadius: 2 },
-          { label: 'Forecast (1d→2d→3d ahead)', data: [...new Array(actualData.length).fill(null), ...predictionData], borderColor: '#52c41a', borderDash: [5, 3], borderWidth: 2, tension: 0.3, pointRadius: 2 },
-        ],
-      };
-
-      let rainChartData: any = null;
-      if (showRainForecast) {
-        const actualRainData = recentActual.map(item => {
-          return item.rain_actual || item.rainfall || item.rain || item.rain_observed || item.actual_rain || 0;
+    const fetchJoloiData = async () => {
+      try {
+        const locations = await APIService.getLocations();
+        const joloiLocation = locations.find((loc) => {
+          if (loc.id === 11) return true;
+          const normalizedName = normalizeLocationName(loc.name);
+          return normalizedName.includes("joloi");
         });
-        const predictionRainData: number[] = [];
-        for (let hour = 1; hour <= 72; hour++) {
-          const futureTime = lastDate.add(hour, 'hour');
-          const hourRecord = sortedData.find(record =>
-            dayjs(`${record.date} ${String(record.hour).padStart(2, '0')}:00`).isSame(futureTime)
-          );
-          let rainPredValue: number | null = null;
-          if (hourRecord) {
-            if (hour <= 24) rainPredValue = hourRecord.rain_forecast_1d ?? null;
-            else if (hour <= 48) rainPredValue = hourRecord.rain_forecast_2d ?? null;
-            else rainPredValue = hourRecord.rain_forecast_3d ?? null;
-          }
-          predictionRainData.push(rainPredValue || 0);
-        }
-        rainChartData = {
-          labels: allLabels,
-          datasets: [
-            {
-              label: 'Actual Rainfall (72h)',
-              data: [...actualRainData, ...new Array(72).fill(null)],
-              backgroundColor: 'rgba(64, 169, 255, 0.6)',
-              type: 'bar' as const
-            },
-            {
-              label: 'Rain Forecast (72h)',
-              data: [...new Array(actualData.length).fill(null), ...predictionRainData],
-              backgroundColor: 'rgba(135, 208, 104, 0.6)',
-              type: 'bar' as const
-            },
-          ],
-        };
-      }
-      return { waterLevelChartData: finalData, rainChartData };
-    }
 
-    if (viewMode === 'error_analysis') {
-      const dateTimeLabels: string[] = [];
-      const error1dData: number[] = [], error2dData: (number | null)[] = [], error3dData: (number | null)[] = [];
-      
-      filteredTableData.forEach(item => {
-        if (item.actual !== null && item.diff_1d !== null) {
-          dateTimeLabels.push(`${item.date} ${String(item.hour).padStart(2, '0')}:00`);
-          error1dData.push(Math.abs(item.diff_1d) * 100);
-          error2dData.push(item.diff_2d !== null ? Math.abs(item.diff_2d) * 100 : null);
-          error3dData.push(item.diff_3d !== null ? Math.abs(item.diff_3d) * 100 : null);
+        if (!joloiLocation) {
+          if (!cancelled) setJoloiExternalRecords([]);
+          return;
         }
-      });
-      
-      const finalData = {
-        labels: dateTimeLabels,
-        datasets: [
-          { label: '1-Day Forecast Error', data: error1dData, backgroundColor: (ctx: any) => ctx.parsed?.y <= 20 ? 'rgba(115, 209, 61, 0.8)' : 'rgba(255, 120, 117, 0.8)', order: 1 },
-          { label: '2-Day Forecast Error', data: error2dData, backgroundColor: (ctx: any) => ctx.parsed?.y <= 20 ? 'rgba(250, 173, 20, 0.8)' : 'rgba(255, 158, 158, 0.8)', order: 2 },
-          { label: '3-Day Forecast Error', data: error3dData, backgroundColor: (ctx: any) => ctx.parsed?.y <= 20 ? 'rgba(135, 208, 104, 0.8)' : 'rgba(255, 189, 189, 0.8)', order: 3 },
-          { label: 'Green Zone Threshold (≤20cm)', data: new Array(dateTimeLabels.length).fill(20), type: 'line' as const, borderColor: '#52c41a', borderWidth: 3, borderDash: [8, 4], pointRadius: 0, fill: 'origin', order: 0 },
-        ],
-      };
-      return { waterLevelChartData: finalData, rainChartData: null };
-    }
 
-    if (viewMode === 'historical_forecasts') {
-      const labels = filteredTableData.map(item => `${item.date} ${String(item.hour).padStart(2, '0')}:00`);
-      const waterLevelChartData = {
-        labels,
-        datasets: [
-          { label: 'Actual Water Level', data: filteredTableData.map(d => d.actual), borderColor: '#ffffff', borderWidth: 4, pointRadius: 2, tension: 0.3, order: 1 },
-          { label: '1-Day Forecast', data: filteredTableData.map(d => d.pred_1d), borderColor: 'rgba(115, 209, 61, 0.8)', showLine: false, pointRadius: 2, order: 2 },
-          { label: '2-Day Forecast', data: filteredTableData.map(d => d.pred_2d), borderColor: 'rgba(250, 173, 20, 0.8)', showLine: false, pointRadius: 2, order: 3 },
-          { label: '3-Day Forecast', data: filteredTableData.map(d => d.pred_3d), borderColor: 'rgba(255, 120, 117, 0.8)', showLine: false, pointRadius: 2, order: 4 },
-        ]
-      };
-      
-      const rainDatasets: any[] = [];
-      if (showRainForecast) {
-        const rain1d = filteredTableData.map(d => d.rain_forecast_1d);
-        const rain2d = filteredTableData.map(d => d.rain_forecast_2d);
-        const rain3d = filteredTableData.map(d => d.rain_forecast_3d);
-        const actualRain = filteredTableData.map(d => d.rain_actual || d.rainfall || d.rain || d.rain_observed || d.actual_rain || null);
+        const joloiData = await APIService.getData(
+          joloiLocation.id,
+          joloiLocation.sensor,
+          joloiLocation.name
+        );
 
-        if (rainForecastMode === '1d') {
-          rainDatasets.push({ label: '1-Day Rain Forecast', data: rain1d, type: 'bar' as const, backgroundColor: 'rgba(64, 169, 255, 0.5)' });
-          rainDatasets.push({ label: 'Actual Rain', data: actualRain, type: 'bar' as const, backgroundColor: 'rgba(255, 77, 79, 0.7)' });
-        }
-        else if (rainForecastMode === '2d') {
-          rainDatasets.push({ label: '2-Day Rain Forecast', data: rain2d, type: 'bar' as const, backgroundColor: 'rgba(135, 208, 104, 0.5)' });
-          rainDatasets.push({ label: 'Actual Rain', data: actualRain, type: 'bar' as const, backgroundColor: 'rgba(255, 77, 79, 0.7)' });
-        }
-        else if (rainForecastMode === '3d') {
-          rainDatasets.push({ label: '3-Day Rain Forecast', data: rain3d, type: 'bar' as const, backgroundColor: 'rgba(255, 195, 18, 0.5)' });
-          rainDatasets.push({ label: 'Actual Rain', data: actualRain, type: 'bar' as const, backgroundColor: 'rgba(255, 77, 79, 0.7)' });
-        }
-        else if (rainForecastMode === 'all') {
-          rainDatasets.push({ label: 'Actual Rain', data: actualRain, type: 'bar' as const, backgroundColor: 'rgba(255, 77, 79, 0.7)' });
-          rainDatasets.push({ label: '1-Day Rain', data: rain1d, type: 'bar' as const, backgroundColor: 'rgba(64, 169, 255, 0.6)' });
-          rainDatasets.push({ label: '2-Day Rain', data: rain2d, type: 'bar' as const, backgroundColor: 'rgba(135, 208, 104, 0.6)' });
-          rainDatasets.push({ label: '3-Day Rain', data: rain3d, type: 'bar' as const, backgroundColor: 'rgba(255, 195, 18, 0.6)' });
-        }
-      }
-      const rainChartData = { labels, datasets: rainDatasets };
-      return { waterLevelChartData, rainChartData };
-    }
+        if (cancelled) return;
 
-    return { waterLevelChartData: null, rainChartData: null };
-  }, [filteredTableData, viewMode, showRainForecast, rainForecastMode]);
+        const parsed = joloiData
+          .map((row) => {
+            const hour = toOptionalNumber(row.hour) ?? 0;
+            const measurement = toOptionalNumber(row.measurement);
+            const ts = dayjs(
+              `${row.date} ${String(Math.trunc(hour)).padStart(2, "0")}:00`,
+              "YYYY-MM-DD HH:mm",
+              true
+            );
 
-  const getChartOptions = useCallback(() => {
-    return {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index' as const, intersect: false },
-      plugins: {
-        legend: { position: 'top' as const, labels: { color: '#888', usePointStyle: true, padding: 20 } },
-        tooltip: {
-          backgroundColor: 'rgba(0,0,0,0.85)',
-          callbacks: {
-            title: (ctx: any) => dayjs(ctx[0].label).format('MMM DD, YYYY HH:mm'),
-            label: (ctx: any) => {
-              const label = ctx.dataset.label || '';
-              const value = ctx.parsed.y;
-              if (value === null || value === undefined) return undefined;
-              const unit = viewMode === 'error_analysis' ? 'cm' : 'm';
-              return `${label}: ${value.toFixed(2)} ${unit}`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: '#888',
-            maxTicksLimit: 8,
-            callback: function (this: any, value: any, index: number) {
-              const label = this.getLabelForValue(value);
-              if (viewMode === 'latest_vs_actual') {
-                if (index % 12 === 0) return dayjs(label).format('MMM DD HH:mm');
-                return '';
-              }
-              if (index % 6 === 0) return dayjs(label).format('MMM DD HH:mm');
-              return '';
-            }
-          },
-          grid: { color: 'rgba(255,255,255,0.05)' }
-        },
-        y: {
-          title: { display: true, text: viewMode === 'error_analysis' ? 'Absolute Prediction Error (cm)' : 'Water Level (m)', color: '#888' },
-          ticks: { color: '#888' },
-          grid: { color: 'rgba(255,255,255,0.05)' },
-          beginAtZero: viewMode === 'error_analysis',
-        }
+            if (!ts.isValid()) return null;
+
+            return {
+              date: row.date,
+              hour: Math.trunc(hour),
+              actual: measurement ?? null,
+              pred_1d: null,
+              pred_2d: null,
+              pred_3d: null,
+              diff_1d: null,
+              diff_2d: null,
+              diff_3d: null,
+              ts,
+              label: ts.format("YYYY-MM-DD HH:00"),
+              locationId: joloiLocation.id,
+              locationName: joloiLocation.name,
+            } as EnrichedRecord;
+          })
+          .filter((row): row is EnrichedRecord => row !== null)
+          .sort((a, b) => a.ts.valueOf() - b.ts.valueOf());
+
+        setJoloiExternalRecords(parsed);
+      } catch (error) {
+        console.error("Failed to fetch Joloi historical data", error);
+        if (!cancelled) setJoloiExternalRecords([]);
       }
     };
-  }, [viewMode]);
 
-  const getHistoricalRainOptions = useCallback(() => {
-    return {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index' as const, intersect: false },
-      plugins: {
-        legend: { position: 'top' as const, labels: { color: '#888', usePointStyle: true } },
-        tooltip: {
-          callbacks: {
-            label: (ctx: any) => {
-              const value = ctx.parsed.y;
-              if (value === null || value === undefined) return undefined;
-              return `${ctx.dataset.label}: ${value.toFixed(2)} mm`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: '#888',
-            maxTicksLimit: 8,
-            callback: function (this: any, value: any, index: number) {
-              const label = this.getLabelForValue(value);
-              if (index % 6 === 0) return dayjs(label).format('MMM DD HH:mm');
-              return '';
-            }
-          },
-          grid: { color: 'rgba(255,255,255,0.05)' }
-        },
-        y: {
-          title: { display: true, text: 'Rainfall (mm)', color: '#888' },
-          ticks: { color: '#888' },
-          grid: { color: 'rgba(255,255,255,0.05)' },
-          beginAtZero: true,
-        }
-      }
+    fetchJoloiData();
+
+    return () => {
+      cancelled = true;
     };
   }, []);
 
-  const getChartTitle = () => {
-    switch (viewMode) {
-      case 'latest_vs_actual': return 'Continuous Forecast Timeline';
-      case 'historical_forecasts': return 'Historical Forecast Analysis';
-      case 'error_analysis': return 'Forecast Error Analysis';
-      default: return 'Water Level Analysis';
+  const recordsInDateRange = useMemo(() => {
+    if (!dateRange?.from || !dateRange?.to) return normalizedRecords;
+
+    const from = dayjs(dateRange.from).startOf("day");
+    const to = dayjs(dateRange.to).endOf("day");
+
+    return normalizedRecords.filter((row) => row.ts.isAfter(from) && row.ts.isBefore(to));
+  }, [normalizedRecords, dateRange]);
+
+  const isPurukRecord = useCallback((record: EnrichedRecord) => {
+    if (record.locationId === 9) return true;
+
+    const name = normalizeLocationName(record.locationName);
+    return name.includes("puruk_cahu");
+  }, []);
+
+  const isTuhupRecord = useCallback((record: EnrichedRecord) => {
+    const name = normalizeLocationName(record.locationName);
+    if (name.includes("muara_tuhup")) return true;
+
+    if (record.locationId === 9) return false;
+
+    return false;
+  }, []);
+
+  const isJoloiRecord = useCallback((record: EnrichedRecord) => {
+    if (record.locationId === 11) return true;
+
+    const name = normalizeLocationName(record.locationName);
+    return name.includes("joloi");
+  }, []);
+
+  const purukRecords = useMemo(
+    () => recordsInDateRange.filter((record) => isPurukRecord(record)),
+    [recordsInDateRange, isPurukRecord]
+  );
+
+  const tuhupRecords = useMemo(() => {
+    if (!hasLocationMetadata) {
+      return recordsInDateRange;
     }
+    return recordsInDateRange.filter((record) => isTuhupRecord(record));
+  }, [recordsInDateRange, hasLocationMetadata, isTuhupRecord]);
+
+  const joloiV3Records = useMemo(
+    () => recordsInDateRange.filter((record) => isJoloiRecord(record)),
+    [recordsInDateRange, isJoloiRecord]
+  );
+
+  const joloiExternalInDateRange = useMemo(() => {
+    if (!dateRange?.from || !dateRange?.to) return joloiExternalRecords;
+
+    const from = dayjs(dateRange.from).startOf("day");
+    const to = dayjs(dateRange.to).endOf("day");
+
+    return joloiExternalRecords.filter((row) => row.ts.isAfter(from) && row.ts.isBefore(to));
+  }, [joloiExternalRecords, dateRange]);
+
+  const joloiRecords = useMemo(
+    () => (joloiV3Records.length > 0 ? joloiV3Records : joloiExternalInDateRange),
+    [joloiV3Records, joloiExternalInDateRange]
+  );
+
+  const performanceStats = useMemo(() => {
+    const validData = tuhupRecords.filter(
+      (r) =>
+        toOptionalNumber(r.actual) !== undefined &&
+        toOptionalNumber(r.diff_1d) !== undefined
+    );
+    if (validData.length === 0) return null;
+    const calcStats = (key: "diff_1d" | "diff_2d" | "diff_3d") => {
+      const diffs = validData
+        .map((r) => toOptionalNumber(r[key]))
+        .filter((d): d is number => d !== undefined);
+      if (diffs.length === 0) return null;
+      const mae = (diffs.reduce((s, d) => s + Math.abs(d), 0) / diffs.length) * 100;
+      const withinGreenZone =
+        (diffs.filter((d) => Math.abs(d) * 100 <= 20).length / diffs.length) * 100;
+      return { mae: mae.toFixed(2), withinGreenZone: withinGreenZone.toFixed(1) };
+    };
+    return {
+      pred_1d: calcStats("diff_1d"),
+      pred_2d: calcStats("diff_2d"),
+      pred_3d: calcStats("diff_3d"),
+      totalMeasurements: validData.length,
+    };
+  }, [tuhupRecords]);
+
+  const composedData = useMemo(() => {
+    const fallbackEmpty = {
+      labels: [] as string[],
+      rainfall: null as any,
+      puruk: null as any,
+      joloi: null as any,
+      tuhup: null as any,
+    };
+
+    if (normalizedRecords.length === 0 && joloiRecords.length === 0) return fallbackEmpty;
+
+    const tuhupAllLookup = buildLookup(tuhupRecords);
+    const purukLookup = buildLookup(purukRecords);
+    const joloiLookup = buildLookup(joloiRecords);
+
+    if (viewMode === "latest_vs_actual") {
+      const actualRecords = [...tuhupRecords]
+        .filter((row) => row.actual !== null)
+        .sort((a, b) => a.ts.valueOf() - b.ts.valueOf());
+
+      const recentActual = actualRecords.slice(-72);
+      if (recentActual.length === 0) {
+        const joloiLabels = [...new Set(joloiRecords.map((row) => row.label))].sort(
+          (a, b) => dayjs(a).valueOf() - dayjs(b).valueOf()
+        );
+
+        if (joloiLabels.length === 0) return fallbackEmpty;
+
+        return {
+          labels: joloiLabels,
+          rainfall: null,
+          puruk: null,
+          joloi: {
+            labels: joloiLabels,
+            datasets: [
+              {
+                label: "Joloi Historical Water Level",
+                data: joloiLabels.map((label) => joloiLookup.get(label)?.actual ?? null),
+                borderColor: "#b45309",
+                backgroundColor: "rgba(180, 83, 9, 0.12)",
+                borderWidth: 2,
+                pointRadius: 1.5,
+                tension: 0.25,
+                fill: true,
+              },
+            ],
+          },
+          tuhup: null,
+        };
+      }
+
+      const lastActualTs = recentActual[recentActual.length - 1].ts;
+      const labels = recentActual.map((row) => row.label);
+      const phaseByLabel = new Map<string, "historical" | "forecast">();
+      const horizonByLabel = new Map<string, 1 | 2 | 3>();
+
+      for (const row of recentActual) {
+        phaseByLabel.set(row.label, "historical");
+      }
+
+      for (let hour = 1; hour <= 72; hour += 1) {
+        const futureTs = lastActualTs.add(hour, "hour");
+        const label = futureTs.format("YYYY-MM-DD HH:00");
+        labels.push(label);
+        phaseByLabel.set(label, "forecast");
+        if (hour <= 24) horizonByLabel.set(label, 1);
+        else if (hour <= 48) horizonByLabel.set(label, 2);
+        else horizonByLabel.set(label, 3);
+      }
+
+      const muaraActual = labels.map((label) => {
+        if (phaseByLabel.get(label) !== "historical") return null;
+        return tuhupAllLookup.get(label)?.actual ?? null;
+      });
+
+      const muaraForecast = labels.map((label) => {
+        if (phaseByLabel.get(label) !== "forecast") return null;
+        const row = tuhupAllLookup.get(label);
+        if (!row) return null;
+
+        const horizon = horizonByLabel.get(label);
+        if (horizon === 1) return row.pred_1d ?? null;
+        if (horizon === 2) return row.pred_2d ?? null;
+        return row.pred_3d ?? null;
+      });
+
+      const purukHistorical = labels.map((label) => purukLookup.get(label)?.actual ?? null);
+      const joloiHistorical = labels.map((label) => joloiLookup.get(label)?.actual ?? null);
+
+      const rainActual = labels.map((label) => {
+        if (phaseByLabel.get(label) !== "historical") return null;
+        return getObservedRain(tuhupAllLookup.get(label));
+      });
+
+      const rainForecast = labels.map((label) => {
+        if (phaseByLabel.get(label) !== "forecast") return null;
+        const row = tuhupAllLookup.get(label);
+        if (!row) return null;
+
+        const horizon = horizonByLabel.get(label);
+        if (horizon === 1) return row.rain_forecast_1d ?? null;
+        if (horizon === 2) return row.rain_forecast_2d ?? null;
+        return row.rain_forecast_3d ?? null;
+      });
+
+      return {
+        labels,
+        rainfall: {
+          labels,
+          datasets: [
+            {
+              label: "Historical Rainfall",
+              data: rainActual,
+              type: "bar" as const,
+              backgroundColor: "rgba(56, 189, 248, 0.55)",
+            },
+            {
+              label: "Forecast Rainfall",
+              data: rainForecast,
+              type: "bar" as const,
+              backgroundColor: "rgba(34, 197, 94, 0.55)",
+            },
+          ],
+        },
+        puruk: {
+          labels,
+          datasets: [
+            {
+              label: "Puruk Cahu Historical Water Level",
+              data: purukHistorical,
+              borderColor: "#f59e0b",
+              backgroundColor: "rgba(245, 158, 11, 0.12)",
+              borderWidth: 2,
+              pointRadius: 1.5,
+              tension: 0.25,
+              fill: true,
+            },
+          ],
+        },
+        joloi: {
+          labels,
+          datasets: [
+            {
+              label: "Joloi Historical Water Level",
+              data: joloiHistorical,
+              borderColor: "#b45309",
+              backgroundColor: "rgba(180, 83, 9, 0.12)",
+              borderWidth: 2,
+              pointRadius: 1.5,
+              tension: 0.25,
+              fill: true,
+            },
+          ],
+        },
+        tuhup: {
+          labels,
+          datasets: [
+            {
+              label: "Muara Tuhup Historical",
+              data: muaraActual,
+              borderColor: "#38bdf8",
+              backgroundColor: "rgba(56, 189, 248, 0.12)",
+              borderWidth: 2,
+              tension: 0.25,
+              pointRadius: 1.5,
+              fill: true,
+            },
+            {
+              label: "Muara Tuhup Forecast (1d to 3d)",
+              data: muaraForecast,
+              borderColor: "#22c55e",
+              borderDash: [6, 4],
+              borderWidth: 2,
+              tension: 0.25,
+              pointRadius: 1.5,
+            },
+          ],
+        },
+      };
+    }
+
+    const labelSet = new Set<string>();
+    for (const row of purukRecords) labelSet.add(row.label);
+    for (const row of joloiRecords) labelSet.add(row.label);
+    for (const row of tuhupRecords) labelSet.add(row.label);
+
+    const labels = [...labelSet].sort((a, b) => dayjs(a).valueOf() - dayjs(b).valueOf());
+
+    if (labels.length === 0) return fallbackEmpty;
+
+    const muaraLookup = buildLookup(tuhupRecords);
+
+    const rainfallDatasets: any[] = [
+      {
+        label: "Historical Rainfall",
+        data: labels.map((label) => getObservedRain(muaraLookup.get(label))),
+        type: "bar" as const,
+        backgroundColor: "rgba(56, 189, 248, 0.55)",
+      },
+    ];
+
+    const rain1d = labels.map((label) => muaraLookup.get(label)?.rain_forecast_1d ?? null);
+    const rain2d = labels.map((label) => muaraLookup.get(label)?.rain_forecast_2d ?? null);
+    const rain3d = labels.map((label) => muaraLookup.get(label)?.rain_forecast_3d ?? null);
+
+    if (rainForecastMode === "1d" || rainForecastMode === "all") {
+      rainfallDatasets.push({
+        label: "Forecast Rainfall 1D",
+        data: rain1d,
+        type: "bar" as const,
+        backgroundColor: "rgba(82, 196, 26, 0.5)",
+      });
+    }
+    if (rainForecastMode === "2d" || rainForecastMode === "all") {
+      rainfallDatasets.push({
+        label: "Forecast Rainfall 2D",
+        data: rain2d,
+        type: "bar" as const,
+        backgroundColor: "rgba(250, 173, 20, 0.5)",
+      });
+    }
+    if (rainForecastMode === "3d" || rainForecastMode === "all") {
+      rainfallDatasets.push({
+        label: "Forecast Rainfall 3D",
+        data: rain3d,
+        type: "bar" as const,
+        backgroundColor: "rgba(255, 120, 117, 0.5)",
+      });
+    }
+
+    const purukData = {
+      labels,
+      datasets: [
+        {
+          label: "Puruk Cahu Historical Water Level",
+          data: labels.map((label) => purukLookup.get(label)?.actual ?? null),
+          borderColor: "#f59e0b",
+          backgroundColor: "rgba(245, 158, 11, 0.12)",
+          borderWidth: 2,
+          pointRadius: 1.5,
+          tension: 0.25,
+          fill: true,
+        },
+      ],
+    };
+
+    const joloiData = {
+      labels,
+      datasets: [
+        {
+          label: "Joloi Historical Water Level",
+          data: labels.map((label) => joloiLookup.get(label)?.actual ?? null),
+          borderColor: "#b45309",
+          backgroundColor: "rgba(180, 83, 9, 0.12)",
+          borderWidth: 2,
+          pointRadius: 1.5,
+          tension: 0.25,
+          fill: true,
+        },
+      ],
+    };
+
+    const muaraHistoricalData = {
+      labels,
+      datasets: [
+        {
+          label: "Muara Tuhup Historical",
+          data: labels.map((label) => muaraLookup.get(label)?.actual ?? null),
+          borderColor: "#38bdf8",
+          backgroundColor: "rgba(56, 189, 248, 0.12)",
+          borderWidth: 2,
+          pointRadius: 1.5,
+          tension: 0.25,
+          fill: true,
+        },
+        {
+          label: "Muara Tuhup Forecast 1D",
+          data: labels.map((label) => muaraLookup.get(label)?.pred_1d ?? null),
+          borderColor: "rgba(82, 196, 26, 0.9)",
+          borderDash: [4, 3],
+          borderWidth: 2,
+          pointRadius: 1,
+          tension: 0.25,
+        },
+        {
+          label: "Muara Tuhup Forecast 2D",
+          data: labels.map((label) => muaraLookup.get(label)?.pred_2d ?? null),
+          borderColor: "rgba(250, 173, 20, 0.9)",
+          borderDash: [4, 3],
+          borderWidth: 2,
+          pointRadius: 1,
+          tension: 0.25,
+        },
+        {
+          label: "Muara Tuhup Forecast 3D",
+          data: labels.map((label) => muaraLookup.get(label)?.pred_3d ?? null),
+          borderColor: "rgba(255, 120, 117, 0.9)",
+          borderDash: [4, 3],
+          borderWidth: 2,
+          pointRadius: 1,
+          tension: 0.25,
+        },
+      ],
+    };
+
+    const muaraErrorData = {
+      labels,
+      datasets: [
+        {
+          label: "1-Day Error",
+          data: labels.map((label) => {
+            const diff = muaraLookup.get(label)?.diff_1d;
+            return diff === null || diff === undefined ? null : Math.abs(diff) * 100;
+          }),
+          backgroundColor: "rgba(82, 196, 26, 0.7)",
+          order: 1,
+        },
+        {
+          label: "2-Day Error",
+          data: labels.map((label) => {
+            const diff = muaraLookup.get(label)?.diff_2d;
+            return diff === null || diff === undefined ? null : Math.abs(diff) * 100;
+          }),
+          backgroundColor: "rgba(250, 173, 20, 0.7)",
+          order: 2,
+        },
+        {
+          label: "3-Day Error",
+          data: labels.map((label) => {
+            const diff = muaraLookup.get(label)?.diff_3d;
+            return diff === null || diff === undefined ? null : Math.abs(diff) * 100;
+          }),
+          backgroundColor: "rgba(255, 120, 117, 0.7)",
+          order: 3,
+        },
+        {
+          label: "Green Zone (<=20 cm)",
+          data: new Array(labels.length).fill(20),
+          type: "line" as const,
+          borderColor: "#22c55e",
+          borderWidth: 2,
+          borderDash: [8, 4],
+          pointRadius: 0,
+          order: 0,
+        },
+      ],
+    };
+
+    return {
+      labels,
+      rainfall: {
+        labels,
+        datasets: rainfallDatasets,
+      },
+      puruk: purukData,
+      joloi: joloiData,
+      tuhup: viewMode === "error_analysis" ? muaraErrorData : muaraHistoricalData,
+    };
+  }, [normalizedRecords, purukRecords, joloiRecords, tuhupRecords, viewMode, rainForecastMode]);
+
+  const getTickStep = useCallback(
+    (labelCount: number) => {
+      if (viewMode === "latest_vs_actual") return 12;
+      if (labelCount > 240) return 24;
+      if (labelCount > 120) return 12;
+      if (labelCount > 60) return 6;
+      return 3;
+    },
+    [viewMode]
+  );
+
+  const makeLineOptions = useCallback(
+    (
+      yTitle: string,
+      unit: "m" | "mm" | "cm",
+      showXAxisTicks: boolean,
+      beginAtZero = false
+    ) => {
+      const tickStep = getTickStep(composedData.labels.length);
+
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index" as const, intersect: false },
+        plugins: {
+          legend: {
+            position: "top" as const,
+            labels: { color: "#888", usePointStyle: true, padding: 16, filter: (item: any) => item.text !== "_pulse" },
+          },
+          tooltip: {
+            backgroundColor: "rgba(0,0,0,0.85)",
+            callbacks: {
+              title: (ctx: any[]) => dayjs(ctx[0]?.label).format("MMM DD, YYYY HH:mm"),
+              label: (ctx: any) => {
+                const value = ctx.parsed?.y;
+                if (value === null || value === undefined) return undefined;
+                return `${ctx.dataset.label}: ${value.toFixed(2)} ${unit}`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: "#888",
+              maxTicksLimit: 10,
+              callback: function (this: any, value: unknown, index: number) {
+                if (!showXAxisTicks) return "";
+                const label = this.getLabelForValue(value);
+                if (index % tickStep === 0) return dayjs(label).format("MMM DD HH:mm");
+                return "";
+              },
+              autoSkip: false,
+            },
+            grid: { color: "rgba(255,255,255,0.05)" },
+          },
+          y: {
+            title: { display: true, text: yTitle, color: "#888" },
+            ticks: { color: "#888" },
+            grid: { color: "rgba(255,255,255,0.05)" },
+            beginAtZero,
+          },
+        },
+      };
+    },
+    [composedData.labels.length, getTickStep]
+  );
+
+  const renderPanel = (
+    key: PanelKey,
+    title: string,
+    description: string,
+    isFirst: boolean,
+    isLast: boolean,
+    icon: React.ReactNode,
+    chartNode: React.ReactNode,
+    badgeColor: string = "bg-slate-700"
+  ) => {
+    return (
+      <div key={key} className={`relative m-0 ${isLast ? "" : "border-b border-border"}`}>
+        <div className="absolute inset-y-0 left-0 w-12">
+          <TimelineRail isFirst={isFirst} isLast={isLast} />
+        </div>
+
+        <div className="ml-12 grid grid-cols-[minmax(150px,8%)_minmax(0,1fr)] bg-card rounded-lg">
+          <div className="px-4 py-4 md:px-5">
+            <CardTitle className="text-base flex items-center gap-2 mt-2">
+              <Badge className={`py-3 rounded-md font-bold ${badgeColor}`}>
+                {icon}
+                {title}
+              </Badge>
+            </CardTitle>
+            <p className="mt-3 text-xs text-muted-foreground">{description}</p>
+          </div>
+
+          <div className="px-2 py-3 md:px-4 md:py-4">
+            <div className="h-[280px] w-full">{chartNode}</div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
-  const getChartDescription = () => {
-    switch (viewMode) {
-      case 'latest_vs_actual': return 'Real-time forecast showing the last 72 hours of actual measurements connected to the next 72 hours of dynamic predictions.';
-      case 'historical_forecasts': return 'Historical comparison of all forecast horizons (1-day, 2-day, 3-day predictions) against actual water levels.';
-      case 'error_analysis': return 'Analyze prediction errors in centimeters. Lower values indicate better forecast accuracy.';
-      default: return 'Comprehensive water level analysis and forecasting system.';
+  const buildWithPulse = (base: any, datasetIdx: number, rgb: string) => {
+    if (!base) return base;
+    const vals = (base.datasets[datasetIdx]?.data ?? []) as (number | null)[];
+    let li = -1;
+    for (let i = vals.length - 1; i >= 0; i--) {
+      if (vals[i] != null) { li = i; break; }
     }
+    if (li === -1) return base;
+    return {
+      ...base,
+      datasets: [
+        ...base.datasets,
+        {
+          label: "_pulse",
+          data: vals.map((v, i) => (i === li ? v : null)),
+          pointBackgroundColor: `rgba(${rgb},${pulseAlpha.toFixed(2)})`,
+          pointBorderColor: "transparent",
+          pointRadius: 5,
+          pointHoverRadius: 5,
+          showLine: false,
+        },
+      ],
+    };
   };
+
+  const hasAnyLabels = composedData.labels.length > 0 || joloiRecords.length > 0;
+  const hasRainForecastToolbar = showRainChart && viewMode !== "latest_vs_actual";
 
   return (
     <div className="space-y-4">
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-4">
-            <div className="space-y-1">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-blue-500" />
-                {getChartTitle()}
-                <TooltipProvider delay={300}>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>Advanced forecast performance analysis with multiple viewing modes</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </CardTitle>
-              <CardDescription>
-                {getChartDescription()}
-              </CardDescription>
-            </div>
+      <Card className="shadow-md w-fit mx-auto px-1 py-1">
+        <CardContent className="px-0 py-0">
+          {/* Primary toolbar row */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <DatePickerWithRange
+              date={dateRange}
+              setDate={setDateRange}
+              className="w-[240px] sm:w-[260px]"
+            />
 
-            <div className="flex flex-col sm:flex-row items-center gap-2">
-              <DatePickerWithRange 
-                date={dateRange}
-                setDate={setDateRange}
-                className="w-full sm:w-[260px]"
-              />
-
-              <div className="flex rounded-md border border-input shadow-sm">
-                {(['latest_vs_actual', 'historical_forecasts', 'error_analysis'] as ViewMode[]).map((mode) => (
+            <div className="flex items-center gap-2">
+              {/* Segmented view-mode control */}
+              <div className="flex rounded-lg border border-input bg-muted/40 p-0.5 shadow-inner">
+                {([
+                  "latest_vs_actual",
+                  "historical_forecasts",
+                  "error_analysis",
+                ] as ViewMode[]).map((mode) => (
                   <Button
                     key={mode}
                     variant={viewMode === mode ? "default" : "ghost"}
                     size="sm"
-                    className="rounded-none first:rounded-l-md last:rounded-r-md h-9 text-xs flex-1 sm:flex-none"
+                    className="rounded-md h-8 px-3 text-xs"
                     onClick={() => setViewMode(mode)}
                   >
-                    {mode === 'latest_vs_actual' ? 'Latest vs Actual' : mode === 'historical_forecasts' ? 'Historical' : 'Error Analysis'}
+                    {mode === "latest_vs_actual"
+                      ? "Latest vs Actual"
+                      : mode === "historical_forecasts"
+                        ? "Historical"
+                        : "Error Analysis"}
                   </Button>
                 ))}
               </div>
 
-              {(viewMode === 'historical_forecasts' || viewMode === 'latest_vs_actual') && (
-                <Button 
-                  variant={showRainForecast ? "default" : "outline"} 
-                  size="sm" 
-                  className="h-9 w-full sm:w-auto mt-2 sm:mt-0"
-                  onClick={() => setShowRainForecast(!showRainForecast)}
-                >
-                  <span className="mr-2">🌧️</span> Rain
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        
-        <CardContent>
-          {performanceStats && (
-            <div className="rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 p-4 mb-6 shadow-md">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center text-white border-r border-white/20 last:border-0 md:last:border-r-0">
-                  <div className="text-2xl sm:text-3xl font-bold">{performanceStats.totalMeasurements}</div>
-                  <div className="text-xs sm:text-sm font-medium opacity-85 mt-1">Total Measurements</div>
-                  <div className="text-[10px] opacity-70">Complete comparisons</div>
-                </div>
-                
-                {([
-                  { key: 'pred_1d', label: '1-Day Error', color: '#52c41a' },
-                  { key: 'pred_2d', label: '2-Day Error', color: '#faad14' },
-                  { key: 'pred_3d', label: '3-Day Error', color: '#ff7875' }
-                ] as const).map(({ key, label, color }) => (
-                  <div key={key} className="text-center text-white border-r border-white/20 last:border-0">
-                    <div className="flex items-center justify-center gap-1.5 mb-1.5">
-                      <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color, boxShadow: '0 0 4px rgba(255,255,255,0.5)' }} />
-                      <span className="text-xs font-semibold">{label}</span>
-                    </div>
-                    <div className="text-xl sm:text-2xl font-bold tracking-tight">
-                      {performanceStats[key]?.mae || '0'} cm
-                    </div>
-                    <div className="text-[10px] sm:text-xs mt-1 bg-white/10 mx-auto px-2 py-0.5 rounded-full w-fit">
-                      {performanceStats[key]?.withinGreenZone || '0'}% green zone
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+              {/* Divider */}
+              <span className="h-6 w-px bg-border shrink-0" />
 
-          <div className="h-[400px] w-full">
-            {chartData.waterLevelChartData && chartData.waterLevelChartData.labels?.length > 0 ? (
-              viewMode === 'error_analysis' ? (
-                <Bar data={chartData.waterLevelChartData as any} options={getChartOptions() as any} />
-              ) : (
-                <Line data={chartData.waterLevelChartData as any} options={getChartOptions() as any} />
-              )
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground border border-dashed rounded-lg bg-muted/30">
-                <div className="text-center">
-                  <p>No valid data for selected period.</p>
-                  <p className="text-xs mt-1">Try adjusting the date range or selecting a different view mode.</p>
+              {/* Rain toggle */}
+              <Button
+                variant={showRainChart ? "default" : "outline"}
+                size="sm"
+                className="h-8 gap-1.5 px-3 text-xs"
+                onClick={() => setShowRainChart((prev) => !prev)}
+              >
+                <CloudRain className="h-3.5 w-3.5" />
+                Rain
+              </Button>
+
+              {/* Divider */}
+              <span className="h-6 w-px bg-border shrink-0" />
+
+              {/* Forecast horizon — always visible, disabled when not applicable */}
+              <div className={`flex items-center gap-2 transition-opacity ${hasRainForecastToolbar ? "opacity-100" : "opacity-35 pointer-events-none"}`}>
+                <span className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
+                  Horizon
+                </span>
+                <div className="flex rounded-lg border border-input bg-muted/40 p-0.5 shadow-inner">
+                  {(["1d", "2d", "3d", "all"] as RainForecastMode[]).map((mode) => (
+                    <Button
+                      key={mode}
+                      variant={rainForecastMode === mode ? "default" : "ghost"}
+                      size="sm"
+                      className="rounded-md h-8 px-3 text-xs"
+                      onClick={() => setRainForecastMode(mode)}
+                    >
+                      {mode === "all" ? "All" : mode.toUpperCase()}
+                    </Button>
+                  ))}
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {showRainForecast && chartData.rainChartData && (chartData.rainChartData as any).datasets && (chartData.rainChartData as any).datasets.length > 0 && (
-        <Card className="shadow-sm">
-          <CardHeader className="pb-2">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <CardTitle className="text-base flex items-center gap-2">
-                <span className="text-xl">🌧️</span> Rainfall Context
-              </CardTitle>
-              {viewMode === 'historical_forecasts' && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground mr-1">Forecast Mode:</span>
-                  <div className="flex rounded-md border border-input text-xs">
-                     {['1d', '2d', '3d', 'all'].map(mode => (
-                       <Button
-                         key={mode}
-                         variant={rainForecastMode === mode ? "default" : "ghost"}
-                         size="sm"
-                         className="h-7 px-2.5 rounded-none first:rounded-l-md last:rounded-r-md text-xs"
-                         onClick={() => setRainForecastMode(mode)}
-                       >
-                         {mode.toUpperCase()}
-                       </Button>
-                     ))}
-                  </div>
+      <Card className="overflow-hidden bg-background shadow-sm ring-0 gap-0 py-0">
+        {showRainChart &&
+          renderPanel(
+            "rainfall",
+            "Rainfall",
+            "Rainfall aligned to water-level timeline.",
+            true,
+            false,
+            <></>, // Icon disabled
+            hasAnyLabels && composedData.rainfall ? (
+              <Bar data={composedData.rainfall as any} options={makeLineOptions("Rainfall (mm)", "mm", true, true) as any} />
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground border border-dashed rounded-lg bg-muted/30 text-sm">
+                No rainfall data for selected filters.
+              </div>
+            ),
+            "bg-blue-700"
+          )}
+
+        {renderPanel(
+          "joloi",
+          "Joloi",
+          "Upstream historical water-level (location_id: 11)",
+          !showRainChart,
+          false,
+          <></>, // <MapPinned className="h-4 w-4 text-pink-500" />
+          hasAnyLabels && composedData.joloi ? (
+            <Line data={buildWithPulse(composedData.joloi, 0, "180,83,9") as any} options={makeLineOptions("Water Level (m)", "m", true, false) as any} />
+          ) : (
+            <div className="h-full flex items-center justify-center text-muted-foreground border border-dashed rounded-lg bg-muted/30 text-sm">
+              No Joloi historical data found in this range.
+            </div>
+          ),
+          "bg-amber-700"
+        )}
+
+        {renderPanel(
+          "tuhup",
+          "Muara Tuhup",
+          viewMode === "error_analysis"
+            ? "Error analysis with green-zone threshold."
+            : "Historical and forecast on shared x-axis.",
+          false,
+          true,
+          <></>, // <Waves className="h-4 w-4 text-cyan-500" />
+          hasAnyLabels && composedData.tuhup ? (
+            viewMode === "error_analysis" ? (
+              <Bar data={composedData.tuhup as any} options={makeLineOptions("Absolute Error (cm)", "cm", true, true) as any} />
+            ) : (
+              <Line data={buildWithPulse(composedData.tuhup, 0, "56,189,248") as any} options={makeLineOptions("Water Level (m)", "m", true, false) as any} />
+            )
+          ) : (
+            <div className="h-full flex items-center justify-center text-muted-foreground border border-dashed rounded-lg bg-muted/30 text-sm">
+              No Muara Tuhup data for selected filters.
+            </div>
+          ),
+          "bg-cyan-700"
+        )}
+
+        {performanceStats && (
+          <div className="ml-12 border-t border-border px-4 py-4">
+            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Forecast Performance — Muara Tuhup
+            </p>
+            <div className="grid grid-cols-4 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold tabular-nums">
+                  {performanceStats.totalMeasurements}
                 </div>
-              )}
+                <div className="text-xs text-muted-foreground">Total Samples</div>
+              </div>
+              {[
+                { key: "pred_1d" as const, label: "1-Day MAE", color: "text-green-400" },
+                { key: "pred_2d" as const, label: "2-Day MAE", color: "text-amber-400" },
+                { key: "pred_3d" as const, label: "3-Day MAE", color: "text-rose-400" },
+              ].map(({ key, label, color }) => {
+                const s = performanceStats[key];
+                return s ? (
+                  <div key={key}>
+                    <div className={`text-xl font-bold tabular-nums ${color}`}>
+                      {s.mae} cm
+                    </div>
+                    <div className="text-xs text-muted-foreground">{label}</div>
+                    <div className="text-xs text-muted-foreground/60">
+                      {s.withinGreenZone}% ≤ 20 cm
+                    </div>
+                  </div>
+                ) : null;
+              })}
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[250px] w-full">
-              <Bar data={chartData.rainChartData as any} options={getHistoricalRainOptions() as any} />
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

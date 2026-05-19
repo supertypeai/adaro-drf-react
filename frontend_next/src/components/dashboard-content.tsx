@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Location, APIService, titleToSlug } from "@/services/api";
 import { MapSection } from "./map-section";
 import { AllLocationsChart } from "./all-locations-chart";
@@ -33,10 +33,10 @@ export function DashboardContent({ locations }: DashboardContentProps) {
     <div className="space-y-6">
       {/* Row 1: Map (70%) + Line Chart (30%) */}
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
-        <Card className="lg:col-span-7 overflow-hidden">
-          <CardHeader className="pb-2">
+        <Card className="lg:col-span-7 overflow-hidden p-0">
+          {/* <CardHeader className="pb-2">
             <CardTitle className="text-lg font-semibold">Monitoring Locations</CardTitle>
-          </CardHeader>
+          </CardHeader> */}
           <CardContent className="p-0">
             <div className="h-[500px]">
               <MapSection locations={locations} />
@@ -44,9 +44,14 @@ export function DashboardContent({ locations }: DashboardContentProps) {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-3 bg-background border-none ring-0">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">Real-Time Water Levels</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2 font-semibold">
+              <span> Real-Time Water Levels </span>
+            </CardTitle>
+            <CardDescription className="text-xs">
+              <p>Last measured: {new Date().toLocaleDateString('en-CA')}</p>
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <AllLocationsChart locations={locations} />
@@ -55,8 +60,8 @@ export function DashboardContent({ locations }: DashboardContentProps) {
       </div>
 
       {/* Row 2: V3 Performance Chart */}
-      <Card>
-        <CardContent className="p-4 md:p-6">
+      <Card className="bg-background ring-0">
+        <CardContent className="p-0">
           {v3Loading ? (
             <Skeleton className="h-[450px] w-full" />
           ) : (
