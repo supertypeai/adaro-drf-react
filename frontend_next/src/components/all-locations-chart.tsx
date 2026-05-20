@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
+import { useLocations } from "@/providers/location-provider";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTooltip, Filler);
 
@@ -32,12 +33,10 @@ type RangeLabel = (typeof RANGES)[number]["label"];
 
 interface LocationChartData {
   loc: Location;
-  allData: DataRecord[];
+  allData: DataRecord[] | null;
   color: string;
-}
-
-interface AllLocationsChartProps {
-  locations: Location[];
+  loading: boolean;
+  error?: boolean
 }
 
 const latestValueLabelPlugin: Plugin<"line"> = {
@@ -90,9 +89,10 @@ const latestValueLabelPlugin: Plugin<"line"> = {
   },
 };
 
-export function AllLocationsChart({ locations }: AllLocationsChartProps) {
+export function AllLocationsChart() {
+  const { locations } = useLocations();
   const [chartsData, setChartsData] = useState<LocationChartData[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<RangeLabel>("1D");
   const [pulsePhase, setPulsePhase] = useState(0);
 
@@ -109,41 +109,70 @@ export function AllLocationsChart({ locations }: AllLocationsChartProps) {
   useEffect(() => {
     if (locations.length === 0) return;
 
-    const fetchAll = async () => {
-      setLoading(true);
-      const results = await Promise.allSettled(
-        locations.map((loc) =>
-          APIService.getData(loc.id, loc.sensor, loc.name).then((data) => ({
-            loc,
-            allData: data,
-            color: "#537EC5"
-          }))
-        )
-      );
-      // console.log(locations);
-      // console.log(results);
+    setChartsData(locations.map((loc) => ({
+      loc,
+      allData: null,
+      color: "#537EC5",
+      loading: true
+    })));
 
-      const newData: LocationChartData[] = [];
-      results.forEach((res) => {
-        if (res.status === "fulfilled") newData.push(res.value);
-      });
-      
-      setChartsData(newData);
-      setLoading(false);
+    const fetchSequentially = async () => {
+      for (let idx = 0; idx < locations.length; idx++) {
+        const loc = locations[idx];
+        
+        let retries = 3;
+        let success = false;
+        
+        while (retries > 0 && !success) {
+          try {
+            const data = await APIService.getData(loc.id, loc.sensor, loc.name);
+            setChartsData((prev) => {
+              const updated = [...prev];
+              updated[idx] = {
+                loc,
+                allData: data,
+                color: "#537EC5",
+                loading: false
+              };
+              return updated;
+            });
+            success = true;
+          } catch (error) {
+            retries -= 1;
+            console.error(`Error loading ${loc.name}. Retries left: ${retries}`, error);
+            
+            if (retries === 0) {
+              setChartsData((prev) => {
+                const updated = [...prev];
+                updated[idx] = {
+                  ...updated[idx],
+                  loading: false,
+                  error: true
+                };
+                return updated;
+              });
+            } else {
+              // Wait 1 second before retrying
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+          }
+        }
+      }
     };
 
-    fetchAll();
-  }, [locations]);
+    fetchSequentially();
+  }, [locations]); // Still here since locations is static, runs once
 
-  if (loading) {
-    return (
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 w-full" />
-        ))}
-      </div>
-    );
-  }
+
+  // if (loading) {
+  //   return (
+  //     <div className="space-y-3">
+  //       {[1, 2, 3].map((i) => (
+  //         <Skeleton key={i} className="h-24 w-full" />
+  //       ))}
+  //     </div>
+  //   );
+  // }
 
   const rangeHours = RANGES.find((r) => r.label === selectedRange)?.hours ?? 24;
   const cutoff = dayjs().subtract(rangeHours, "hour");
@@ -169,9 +198,21 @@ export function AllLocationsChart({ locations }: AllLocationsChartProps) {
 
       {/* One small chart per location */}
       <div className="space-y-4 overflow-y-auto max-h-[380px] pr-1 custom-scrollbar">
-        {chartsData.map(({ loc, allData, color }) => {
+        {chartsData.map(( item, idx ) => {
+          if (item.loading) {
+            return <Skeleton key={idx} className="h-24 w-full" />
+          }
+
+          if (item.error || !item.allData) {
+            return (
+              <div key={item.loc.id} className="h-24 w-full bg-red-500/10 rounded-lg flex items-center justify-center">
+                <span className="text-xs text-red-400">Failed to load {item.loc.title}</span>
+              </div>
+            );
+          }
+
           // Filter to selected time range
-          const filtered = allData
+          const filtered = item.allData
             .filter((d) => {
               const dt = dayjs(`${d.date}T${String(d.hour).padStart(2, "0")}:00:00`);
               return dt.isAfter(cutoff);
@@ -210,10 +251,10 @@ export function AllLocationsChart({ locations }: AllLocationsChartProps) {
           );
 
           return (
-            <div key={loc.id} className="space-y-1">
+            <div key={item.loc.id} className="space-y-1">
               <div className="flex items-center justify-between bg-background p-2 rounded-lg">
                 <span className="text-xs font-medium truncate">
-                  {loc.title}
+                  {item.loc.title}
                 </span>
                 {/* <span className="text-xs text-[#89a8dc] font-bold font-mono">
                   {latest != null ? `${Number(latest).toFixed(2)} m` : "N/A"}
@@ -226,8 +267,8 @@ export function AllLocationsChart({ locations }: AllLocationsChartProps) {
                     datasets: [
                       {
                         data: values,
-                        borderColor: color,
-                        backgroundColor: color + "20",
+                        borderColor: item.color,
+                        backgroundColor: item.color + "20",
                         borderWidth: 1.5,
                         tension: 0.3,
                         pointRadius: 0,

@@ -19,6 +19,7 @@
     "@vis.gl/react-google-maps": "^1.8.3",
     "antd": "^6.3.7",
     "chart.js": "^4.5.1",
+    "chartjs-adapter-dayjs-4": "^1.0.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

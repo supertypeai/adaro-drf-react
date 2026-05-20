@@ -1,6 +1,8 @@
 const PATH = "https://adaro-data-warehouse.et.r.appspot.com";
 // const PATH = "http://localhost:8000";
 
+import { type PreprocessedV3Data, preprocessV3Data } from "@/lib/v3-preprocessor";
+
 export interface Location {
   id: number;
   title: string;
@@ -23,6 +25,7 @@ export interface V3TableRecord {
   date: string;
   hour: number;
   actual: number | null;
+  is_peak: boolean | null;
   pred_1d: number | null;
   pred_2d: number | null;
   pred_3d: number | null;
@@ -69,6 +72,15 @@ async function authFetch<T>(url: string, options: RequestInit = {}): Promise<T> 
   // Check for 401 (Unathorized here, if 401, then get ttokens? or before authFetch we have to make sure that the token is valid?)
 
   return resp.json();
+}
+
+export interface V3ForecastResponse {
+  response: string;
+  data?: V3TableRecord[];
+  data_wide?: V3TableRecord[];
+  min_date?: string;
+  max_date?: string;
+  preprocessed?: PreprocessedV3Data;
 }
 
 export const APIService = {
@@ -131,16 +143,19 @@ export const APIService = {
       body: JSON.stringify(loc),
     }),
 
-  getV3ForecastData: (loc: string): Promise<{
-    response: string;
-    data?: V3TableRecord[];
-    data_wide?: V3TableRecord[];
-  }> =>
-    authFetch(`${PATH}/bq/v3/tuhup/`, {
+  getV3ForecastData: async (loc: string): Promise<V3ForecastResponse> => {
+    const resp = (await authFetch(`${PATH}/bq/v3/tuhup/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(loc),
-    }),
+    })) as V3ForecastResponse;
+    
+    if (resp.data_wide) {
+      resp.preprocessed = preprocessV3Data(resp.data_wide, resp.min_date, resp.max_date);
+    }
+    
+    return resp;
+  },
 
   loginUser: async (body: { username: string; password: string }) => {
     const resp = await fetch(`${PATH}/api/token/`, {
@@ -168,6 +183,19 @@ export const APIService = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     }),
+
+  getJoloiData: async (): Promise<any[]> => {
+    const response = await authFetch<{ response: string; data: any[] }>(`${PATH}/bq/joloi/`, {
+      method: "POST",
+    });
+    if (response.response === "success") {
+      return response.data.map((x) => ({
+        ...x,
+        DateHour: `${x.date}-${x.hour}`,
+      }));
+    }
+    return [];
+  },
 };
 
 export { titleToSlug };

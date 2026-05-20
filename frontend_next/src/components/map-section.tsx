@@ -5,10 +5,7 @@ import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-m
 import { useRouter } from "next/navigation";
 import { Circle } from "lucide-react";
 import { Location, titleToSlug } from "@/services/api";
-
-interface MapSectionProps {
-  locations: Location[];
-}
+import { useLocations } from "@/providers/location-provider";
 
 /** Pulsing dot — used for active sensor locations */
 const SensorMarker = ({ color }: { color: string }) => (
@@ -140,9 +137,10 @@ function WatershedOverlay() {
   return null;
 }
 
-export function MapSection({ locations }: MapSectionProps) {
+export function MapSection() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
   const router = useRouter();
+  const { locations } = useLocations();
   const [coordinatePoints, setCoordinatePoints] = useState<CoordinatePoint[]>([]);
 
   useEffect(() => {

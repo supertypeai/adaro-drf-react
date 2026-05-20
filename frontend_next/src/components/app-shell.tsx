@@ -29,7 +29,7 @@ import {
   BarChart3Icon,
   LayoutDashboardIcon,
   LogOutIcon,
-  MapPinIcon,
+  RadioTowerIcon,
   UserIcon,
 } from "lucide-react";
 
@@ -98,7 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   alt="Adaro"
                   width={88}
                   height={24}
-                  className="h-6 w-auto"
+                  className="h-10 w-auto"
                 />
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -148,11 +148,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         isActive={pathname === locPath}
                         render={<Link href={locPath} />}
                       >
-                        <MapPinIcon />
-                        <span
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            loc.sensor ? "bg-red-500" : "bg-blue-400"
-                          }`}
+                        <RadioTowerIcon
+                          className={'text-primary'}
                         />
                         <span>{loc.title}</span>
                       </SidebarMenuButton>
@@ -185,8 +182,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <SidebarInset>
         <header className="flex h-(--header-height) shrink-0 items-center justify-between border-b px-4 md:px-6">
           <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mx-1 h-4" />
+            {/* <SidebarTrigger className="-ml-1" /> */}
+            {/* <Separator orientation="vertical" className="mx-1 h-4" /> */}
             <h1 className="text-base font-medium">{pageTitle}</h1>
           </div>
         </header>
