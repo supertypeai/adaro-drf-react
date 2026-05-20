@@ -145,6 +145,9 @@ export function V3PerformanceChart({ preprocessedData }: V3PerformanceChartProps
                 <p className="mt-3 text-xs text-muted-foreground">
                   Historical rainfall and rain forecast on shared x-axis.
                 </p>
+                <p className="mt-3 text-xs text-muted-foreground italic">
+                  Source: Openweather
+                </p>
               </div>
               <div className="px-2 py-3 md:px-4 md:py-4">
                 <div style={{ height: "220px" }} className="w-full">

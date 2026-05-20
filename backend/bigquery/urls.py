@@ -16,6 +16,7 @@ urlpatterns = [
     path("sensor/data/list", views.listSensorData, name="sensor-list"),
     path("sensor/data/retrieve", views.getSensorData, name="sensor-get"),
     path("data/retrieve/", views.getDataForFrontEnd, name="biquery-data"),
+    path("joloi/", views.getJoloiData, name="joloi-data"),
     # path(
     #     # "locs/single-data/<int:pk>/",
     #     views.singleLocationData,

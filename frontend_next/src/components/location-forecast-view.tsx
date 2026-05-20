@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { APIService, Location, V3TableRecord } from "@/services/api";
+import { APIService, Location, V3TableRecord, type V3ForecastResponse } from "@/services/api";
+import { type PreprocessedV3Data } from "@/lib/v3-preprocessor";
 import { V3PerformanceChart } from "@/components/v3-performance-chart";
 import { V3PerformanceTable } from "@/components/v3-performance-table";
 import { WeeklyForecastGraph } from "@/components/weekly-forecast-graph";
@@ -21,6 +22,7 @@ interface LocationForecastViewProps {
 }
 
 export function LocationForecastView({ location }: LocationForecastViewProps) {
+  const [v3Preprocessed, setV3Preprocessed] = useState<PreprocessedV3Data | null>(null);
   const [v3TableData, setV3TableData] = useState<V3TableRecord[]>([]);
   const [weeklyData, setWeeklyData] = useState<WeeklyRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,9 +43,12 @@ export function LocationForecastView({ location }: LocationForecastViewProps) {
         APIService.getForecastData(locName),
       ])
         .then(([v3Resp, v1Resp]) => {
+          if (v3Resp.response === "success" && v3Resp.preprocessed) {
+            setV3Preprocessed(v3Resp.preprocessed);
+            setHasV3(true);
+          }
           if (v3Resp.response === "success" && v3Resp.data_wide && v3Resp.data_wide.length > 0) {
             setV3TableData(v3Resp.data_wide);
-            setHasV3(true);
           }
           if (v1Resp.response === "success" && v1Resp.data) {
             try {
@@ -103,7 +108,7 @@ export function LocationForecastView({ location }: LocationForecastViewProps) {
           </div>
           <Card>
             <CardContent className="p-4 md:p-6">
-              <V3PerformanceChart v3TableData={v3TableData} />
+              <V3PerformanceChart preprocessedData={v3Preprocessed} />
             </CardContent>
           </Card>
           <Card>

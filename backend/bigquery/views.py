@@ -50,24 +50,28 @@ def getV3TuhupForecastData(request):
         if loc_requested == "muara_tuhup":
             try:
                 # Get v3 forecast data with performance metrics and weather data
-                table_id = "adaro-data-warehouse.muara_tuhup_forecasts_v3.detailed_forecast_and_weather"
+                forecast_table_id = "adaro-data-warehouse.muara_tuhup_forecasts_v3.detailed_forecast_and_weather"
+                sensor_table_id = "adaro-data-warehouse.muara_tuhup_sensor.muara_tuhup"
                 query_string = f"""
                     SELECT 
-                        Date,
-                        Hour,
-                        Actual,
-                        Actual_Rain,
-                        Pred_1d,
-                        Pred_2d,
-                        Pred_3d,
-                        Rain_Forecast_1d,
-                        Rain_Forecast_2d,
-                        Rain_Forecast_3d,
-                        CONCAT(Date, '-', LPAD(CAST(Hour AS STRING), 2, '0')) AS DateHour
-                    FROM `{table_id}`
-                    WHERE PARSE_DATE('%Y-%m-%d', Date) >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
-                      AND PARSE_DATE('%Y-%m-%d', Date) <= DATE_ADD(CURRENT_DATE(), INTERVAL 10 DAY)
-                    ORDER BY Date ASC, Hour ASC
+                        f.Date,
+                        f.Hour,
+                        s.measurement AS Actual,
+                        s.is_peak AS Is_Peak,
+                        f.Actual_Rain,
+                        f.Pred_1d,
+                        f.Pred_2d,
+                        f.Pred_3d,
+                        f.Rain_Forecast_1d,
+                        f.Rain_Forecast_2d,
+                        f.Rain_Forecast_3d,
+                        CONCAT(f.Date, '-', LPAD(CAST(f.Hour AS STRING), 2, '0')) AS DateHour
+                    FROM `{forecast_table_id}` AS f
+                    LEFT JOIN `{sensor_table_id}` AS s
+                        ON f.Date = s.date AND f.Hour = s.hour
+                    WHERE PARSE_DATE('%Y-%m-%d', f.Date) >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+                    AND PARSE_DATE('%Y-%m-%d', f.Date) <= DATE_ADD(CURRENT_DATE(), INTERVAL 10 DAY)
+                    ORDER BY f.Date ASC, f.Hour ASC
                 """
 
                 query_job = client.query(query_string)
@@ -84,6 +88,7 @@ def getV3TuhupForecastData(request):
                         "date": row_dict.get("Date"),
                         "hour": row_dict.get("Hour"),
                         "actual": row_dict.get("Actual"),
+                        "is_peak": row_dict.get("Is_Peak"),
                         "actual_rain": row_dict.get("Actual_Rain"),
                         "pred_1d": row_dict.get("Pred_1d"),
                         "pred_2d": row_dict.get("Pred_2d"),
@@ -129,11 +134,17 @@ def getV3TuhupForecastData(request):
                                 }
                             )
 
+                # Calculate min and max dates
+                min_date = wide_data[0]["date"] if wide_data else None
+                max_date = wide_data[-1]["date"] if wide_data else None
+
                 return JsonResponse(
                     {
                         "response": "success",
                         "data": forecast_data,
                         "data_wide": wide_data,
+                        "min_date": min_date,
+                        "max_date": max_date,
                         "version": "v3",
                     },
                     safe=False,
@@ -617,3 +628,47 @@ def getDataForFrontEnd(request):
         #         {"response": "invalid location requested"},
         #         status=status.HTTP_400_BAD_REQUEST,
         #     )
+
+@api_view(["POST"])
+@permission_classes(
+    [
+        IsAuthenticated,
+    ]
+)
+@csrf_exempt
+def getJoloiData(request):
+    try:
+        client = bigquery.Client()
+
+        query_string = """
+            SELECT * 
+            FROM `adaro-data-warehouse.joloi_sensor.joloi` 
+            WHERE PARSE_DATE('%Y-%m-%d', date) >= DATE_SUB(CURRENT_DATE(), INTERVAL 60 DAY)
+            AND PARSE_DATE('%Y-%m-%d', date) <= DATE_ADD(CURRENT_DATE(), INTERVAL 10 DAY)
+            ORDER BY date ASC, hour ASC;
+        """
+
+        query_job = client.query(query_string)
+        data = []
+        for row in query_job:
+            record = {
+                "datetime": str(row.get("datetime")),
+                "date": str(row.get("date")),
+                "hour": str(row.get("hour")),
+                "measurement": row.get("measurement"),
+                "is_peak": row.get("is_peak"),
+            }
+            data.append(record)
+
+        return Response(
+            {"response": "success", "data": data},
+            status=status.HTTP_200_OK,
+        )
+    except Exception as e:
+        return Response(
+            {
+                "response": "error",
+                "message": f"Failed to fetch Joloi data: {str(e)}",
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
