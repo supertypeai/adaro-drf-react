@@ -41,3 +41,5 @@ backend/backend/__pycache__/
 
 *.pyc
 credentials/
+# Local Netlify folder
+.netlify

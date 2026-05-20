@@ -137,7 +137,7 @@ if os.getenv("GAE_APPLICATION", None):
 else:
     # Running locally so connect to either a local MySQL instance or connect
     # to Cloud SQL via the proxy.  To start the proxy via command line:
-    #    $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
+    #    $ cloud-sql-proxy --port 3306 adaro-data-warehouse:asia-southeast2:adaro-web
     # See https://cloud.google.com/sql/docs/mysql-connect-proxy
     DATABASES = {
         "default": {
@@ -221,9 +221,12 @@ if APPENGINE_URL:
     if not urlparse(APPENGINE_URL).scheme:
         APPENGINE_URL = f"https://{APPENGINE_URL}"
 
-    FRONTEND_URL = "https://adaro-data-warehouse.netlify.app"
-    ALLOWED_HOSTS = [urlparse(APPENGINE_URL).netloc, FRONTEND_URL]
-    CSRF_TRUSTED_ORIGINS = [APPENGINE_URL, FRONTEND_URL]
+    FRONTEND_URLS = [
+        "https://adaro-data-warehouse.netlify.app",
+        "https://adaro-data-warehouse-v2.netlify.app",
+    ]
+    ALLOWED_HOSTS = [urlparse(APPENGINE_URL).netloc] + FRONTEND_URLS
+    CSRF_TRUSTED_ORIGINS = [APPENGINE_URL] + FRONTEND_URLS
     SECURE_SSL_REDIRECT = True
 else:
     ALLOWED_HOSTS = ["*"]
