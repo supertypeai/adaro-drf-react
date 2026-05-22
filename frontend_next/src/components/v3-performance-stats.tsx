@@ -158,20 +158,20 @@ export function V3PerformanceStats({ records, joloiRecords }: V3PerformanceStats
       }
 
       // Loadable structured blocks
-      const loadableHours = periodActuals.filter(v => v >= 19.8 && v <= 25.0).length;
-      const nonLoadableHours = periodActuals.filter(v => v < 19.8 || v > 25.0).length;
+      const loadableHours = periodActuals.filter(v => v >= 19.6 && v <= 28.0).length;
+      const nonLoadableHours = periodActuals.filter(v => v < 19.6 || v > 28.0).length;
 
       const blocks: { start: string; end: string; startVal: string; endVal: string; loadable: boolean }[] = [];
       if (periodRecords.length > 0) {
         const safeRecords = periodRecords.filter(r => toOptionalNumber(r.actual) !== undefined);
         if (safeRecords.length > 0) {
-          let currentStatus = (toOptionalNumber(safeRecords[0].actual) ?? 0) >= 19.8 && (toOptionalNumber(safeRecords[0].actual) ?? 0) <= 25.0;
+          let currentStatus = (toOptionalNumber(safeRecords[0].actual) ?? 0) >= 19.6 && (toOptionalNumber(safeRecords[0].actual) ?? 0) <= 28.0;
           let startTs = safeRecords[0].ts;
           let startVal = toOptionalNumber(safeRecords[0].actual) ?? 0;
 
           for (let i = 1; i < safeRecords.length; i++) {
             const val = toOptionalNumber(safeRecords[i].actual)!;
-            const isLoadable = val >= 19.8 && val <= 25.0;
+            const isLoadable = val >= 19.6 && val <= 28.0;
             if (isLoadable !== currentStatus) {
               const endTs = safeRecords[i - 1].ts;
               const endVal = toOptionalNumber(safeRecords[i - 1].actual)!;
@@ -226,7 +226,7 @@ export function V3PerformanceStats({ records, joloiRecords }: V3PerformanceStats
       latest: {
         value: latestActual.toFixed(2),
         time: latest.ts.format("MMM DD, YYYY HH:mm"),
-        isLoadable: latestActual >= 19.8 && latestActual <= 25.0
+        isLoadable: latestActual >= 19.6 && latestActual <= 28.0
       },
       cards: [
         generateSummary(1, "1 Day Summary"),

@@ -107,8 +107,8 @@ const loadableLinesPlugin = {
        ctx.stroke();
     };
 
-    drawLine(25.0, "Max Loadable (25m)");
-    drawLine(19.8, "Min Loadable (19.8m)");
+    drawLine(28.0, "Max Loadable (28m)");
+    drawLine(19.6, "Min Loadable (19.6m)");
     ctx.restore();
   }
 };
@@ -389,14 +389,14 @@ export function V3ChartDisplay({
       });
 
       datasets.push({
-        label: "Max Loadable (25m)",
+        label: "Max Loadable (28m)",
         data: [],
         borderColor: "rgba(16, 185, 129, 0.4)",
         borderWidth: 1.5,
         borderDash: [5, 5],
       });
       datasets.push({
-        label: "Min Loadable (19.8m)",
+        label: "Min Loadable (19.6m)",
         data: [],
         borderColor: "rgba(16, 185, 129, 0.4)",
         borderWidth: 1.5,
@@ -539,14 +539,14 @@ export function V3ChartDisplay({
 
     if (viewMode !== "error_analysis") {
       datasets.push({
-        label: "Max Loadable (25m)",
+        label: "Max Loadable (28m)",
         data: [],
         borderColor: "rgba(16, 185, 129, 0.4)",
         borderWidth: 1.5,
         borderDash: [5, 5],
       });
       datasets.push({
-        label: "Min Loadable (19.8m)",
+        label: "Min Loadable (19.6m)",
         data: [],
         borderColor: "rgba(16, 185, 129, 0.4)",
         borderWidth: 1.5,

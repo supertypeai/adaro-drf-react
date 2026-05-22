@@ -34,7 +34,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
     APIService.getLocations()
       .then((data) => {
-        const usedLocations = [11, 9, 7, 8, 10];
+        const usedLocations = [11, 9, 13, 7, 8, 10];
         const filteredLocations = usedLocations
           .map((id) => data.find(item => item.id == id))
           .filter((item) => item !== undefined);
